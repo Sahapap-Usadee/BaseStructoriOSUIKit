@@ -1,0 +1,113 @@
+//
+//  TabOneCoordinator.swift
+//  BaseStructoriOSUIKit
+//
+//  Created by sahapap on 8/8/2568 BE.
+//
+
+import UIKit
+
+class TabOneCoordinator: BaseCoordinator {
+    
+    func showDetail() {
+        let detailViewController = TabOneDetailViewController()
+        detailViewController.coordinator = self
+        
+        navigationController.pushViewController(detailViewController, animated: true)
+    }
+}
+
+// MARK: - Detail View Controller
+class TabOneDetailViewController: UIViewController, NavigationConfigurable {
+    
+    weak var coordinator: TabOneCoordinator?
+    
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "หน้ารายละเอียด"
+        label.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+        label.textColor = .label
+        label.textAlignment = .center
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let descriptionLabel: UILabel = {
+        let label = UILabel()
+        label.text = "นี่คือตัวอย่างการ navigate ด้วย Coordinator pattern\nโดยไม่ต้องใช้ Storyboard"
+        label.font = UIFont.systemFont(ofSize: 16, weight: .regular)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var backButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("กลับไปหน้าแรก", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        button.backgroundColor = .systemGreen
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 12
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    var navigationBarStyle: NavigationBarStyle {
+        return .default
+    }
+    
+    var navigationConfiguration: NavigationConfiguration {
+        return NavigationBuilder()
+            .title("รายละเอียด")
+            .style(.default)
+            .rightButton(image: UIImage(systemName: "square.and.arrow.up")) { [weak self] in
+                self?.shareButtonTapped()
+            }
+            .build()
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        configureNavigationBar()
+    }
+    
+    private func setupUI() {
+        view.backgroundColor = .systemBackground
+        
+        view.addSubview(titleLabel)
+        view.addSubview(descriptionLabel)
+        view.addSubview(backButton)
+        
+        NSLayoutConstraint.activate([
+            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -50),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
+            descriptionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            descriptionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            
+            backButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 40),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            backButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            backButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
+    }
+    
+    @objc private func backButtonTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+    
+    private func shareButtonTapped() {
+        let activityController = UIActivityViewController(
+            activityItems: ["แชร์จาก BaseStructor iOS App"],
+            applicationActivities: nil
+        )
+        present(activityController, animated: true)
+    }
+}
