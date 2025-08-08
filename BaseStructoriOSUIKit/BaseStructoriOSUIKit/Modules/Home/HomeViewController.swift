@@ -1,16 +1,29 @@
 //
-//  TabOneViewController.swift
+//  HomeViewController.swift
 //  BaseStructoriOSUIKit
 //
 //  Created by sahapap on 8/8/2568 BE.
 //
 
 import UIKit
+import Combine
 
-class TabOneViewController: UIViewController, NavigationConfigurable {
+class HomeViewController: UIViewController, NavigationConfigurable {
     
     // MARK: - Properties
-    weak var coordinator: MainCoordinator?
+    weak var coordinator: HomeCoordinator?
+    private let viewModel: HomeViewModel
+    private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Initialization
+    init(viewModel: HomeViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - UI Components
     private let titleLabel: UILabel = {
@@ -127,7 +140,7 @@ class TabOneViewController: UIViewController, NavigationConfigurable {
     
     // MARK: - Actions
     @objc private func showDetailTapped() {
-        coordinator?.showTabOneDetail()
+        coordinator?.showDetail()
     }
     
     private func rightButtonTapped() {
@@ -138,7 +151,7 @@ class TabOneViewController: UIViewController, NavigationConfigurable {
 }
 
 // MARK: - UITableViewDataSource
-extension TabOneViewController: UITableViewDataSource {
+extension HomeViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sampleItems.count
     }
@@ -152,7 +165,7 @@ extension TabOneViewController: UITableViewDataSource {
 }
 
 // MARK: - UITableViewDelegate
-extension TabOneViewController: UITableViewDelegate {
+extension HomeViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         

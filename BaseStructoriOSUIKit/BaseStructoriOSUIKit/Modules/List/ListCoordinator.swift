@@ -1,16 +1,40 @@
 //
-//  TabTwoCoordinator.swift
+//  ListCoordinator.swift
 //  BaseStructoriOSUIKit
 //
 //  Created by sahapap on 8/8/2568 BE.
 //
 
 import UIKit
+import Combine
 
-class TabTwoCoordinator: BaseCoordinator {
+class ListCoordinator: BaseCoordinator {
+    private var cancellables = Set<AnyCancellable>()
+    
+    func createListViewController() -> ListViewController {
+        // Create ViewModel
+        let viewModel = ListViewModel()
+        
+        // Create ViewController with ViewModel
+        let viewController = ListViewController(viewModel: viewModel)
+        viewController.coordinator = self
+        
+        // Subscribe to ViewModel events
+        subscribeToViewModelEvents(viewModel)
+        
+        return viewController
+    }
+    
+    private func subscribeToViewModelEvents(_ viewModel: ListViewModel) {
+        viewModel.modalRequested
+            .sink { [weak self] in
+                self?.showModal()
+            }
+            .store(in: &cancellables)
+    }
     
     func showModal() {
-        let modalViewController = TabTwoModalViewController()
+        let modalViewController = ListModalViewController()
         modalViewController.coordinator = self
         
         let modalNavController = UINavigationController(rootViewController: modalViewController)
@@ -21,10 +45,9 @@ class TabTwoCoordinator: BaseCoordinator {
 }
 
 // MARK: - Modal View Controller
-class TabTwoModalViewController: UIViewController, NavigationConfigurable {
+class ListModalViewController: UIViewController, NavigationConfigurable {
     
-    weak var coordinator: TabTwoCoordinator?
-    
+    weak var coordinator: ListCoordinator?
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Modal จาก Coordinator"

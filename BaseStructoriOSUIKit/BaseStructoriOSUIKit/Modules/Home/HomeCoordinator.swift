@@ -1,26 +1,71 @@
 //
-//  TabOneCoordinator.swift
+//  HomeCoordinator.swift
 //  BaseStructoriOSUIKit
 //
 //  Created by sahapap on 8/8/2568 BE.
 //
 
 import UIKit
+import Combine
 
-class TabOneCoordinator: BaseCoordinator {
+class HomeCoordinator: BaseCoordinator {
+    private var cancellables = Set<AnyCancellable>()
+    
+    func createHomeViewController() -> HomeViewController {
+        // Create ViewModel
+        let viewModel = HomeViewModel()
+        
+        // Create ViewController with ViewModel
+        let viewController = HomeViewController(viewModel: viewModel)
+        viewController.coordinator = self
+        
+        // Subscribe to ViewModel events
+        subscribeToViewModelEvents(viewModel)
+        
+        return viewController
+    }
+    
+    private func subscribeToViewModelEvents(_ viewModel: HomeViewModel) {
+        viewModel.detailRequested
+            .sink { [weak self] in
+                self?.showDetail()
+            }
+            .store(in: &cancellables)
+        
+        viewModel.themeToggleRequested
+            .sink { [weak self] in
+                self?.toggleTheme()
+            }
+            .store(in: &cancellables)
+    }
     
     func showDetail() {
-        let detailViewController = TabOneDetailViewController()
+        let detailViewController = HomeDetailViewController()
         detailViewController.coordinator = self
         
         navigationController.pushViewController(detailViewController, animated: true)
     }
+    
+    private func toggleTheme() {
+        // Handle theme toggle logic
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            
+            UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
+                if window.overrideUserInterfaceStyle == .dark {
+                    window.overrideUserInterfaceStyle = .light
+                } else {
+                    window.overrideUserInterfaceStyle = .dark
+                }
+            }
+        }
+    }
 }
 
 // MARK: - Detail View Controller
-class TabOneDetailViewController: UIViewController, NavigationConfigurable {
+class HomeDetailViewController: UIViewController, NavigationConfigurable {
     
-    weak var coordinator: TabOneCoordinator?
+    weak var coordinator: HomeCoordinator?
     
     private let titleLabel: UILabel = {
         let label = UILabel()

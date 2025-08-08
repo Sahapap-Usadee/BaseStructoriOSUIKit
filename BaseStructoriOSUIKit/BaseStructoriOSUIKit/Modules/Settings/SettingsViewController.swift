@@ -1,15 +1,29 @@
 //
-//  TabThreeViewController.swift
+//  SettingsViewController.swift
 //  BaseStructoriOSUIKit
 //
 //  Created by sahapap on 8/8/2568 BE.
 //
 
 import UIKit
+import Combine
 
-class TabThreeViewController: UIViewController, NavigationConfigurable {
+class SettingsViewController: UIViewController, NavigationConfigurable {
+
+    // MARK: - Properties
+    weak var coordinator: SettingsCoordinator?
+    private let viewModel: SettingsViewModel
+    private var cancellables = Set<AnyCancellable>()
     
-    weak var coordinator: MainCoordinator?
+    // MARK: - Initialization
+    init(viewModel: SettingsViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -127,8 +141,8 @@ class TabThreeViewController: UIViewController, NavigationConfigurable {
 }
 
 // MARK: - UITableViewDataSource
-extension TabThreeViewController: UITableViewDataSource {
-    
+extension SettingsViewController: UITableViewDataSource {
+
     func numberOfSections(in tableView: UITableView) -> Int {
         return settingsData.count
     }
@@ -150,7 +164,7 @@ extension TabThreeViewController: UITableViewDataSource {
 }
 
 // MARK: - UITableViewDelegate
-extension TabThreeViewController: UITableViewDelegate {
+extension SettingsViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)

@@ -1,16 +1,29 @@
 //
-//  TabTwoViewController.swift
+//  ListViewController.swift
 //  BaseStructoriOSUIKit
 //
 //  Created by sahapap on 8/8/2568 BE.
 //
 
 import UIKit
+import Combine
 
-class TabTwoViewController: UIViewController, NavigationConfigurable {
+class ListViewController: UIViewController, NavigationConfigurable {
     
     // MARK: - Properties
-    weak var coordinator: MainCoordinator?
+    weak var coordinator: ListCoordinator?
+    private let viewModel: ListViewModel
+    private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Initialization
+    init(viewModel: ListViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - UI Components
     private let titleLabel: UILabel = {
@@ -139,7 +152,7 @@ class TabTwoViewController: UIViewController, NavigationConfigurable {
     
     // MARK: - Actions
     @objc private func showModalTapped() {
-        coordinator?.showModalFromTabTwo()
+        coordinator?.showModal()
     }
     
     @objc private func showActionSheetTapped() {

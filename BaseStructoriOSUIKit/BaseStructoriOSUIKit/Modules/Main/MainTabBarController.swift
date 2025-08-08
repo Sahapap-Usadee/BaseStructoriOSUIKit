@@ -11,10 +11,27 @@ class MainTabBarController: UITabBarController {
     
     weak var coordinator: MainCoordinator?
     
+    // MARK: - Initialization
+    init(
+        homeViewController: UIViewController,
+        listViewController: UIViewController,
+        settingsViewController: UIViewController
+    ) {
+        super.init(nibName: nil, bundle: nil)
+        setupTabBar()
+        setupViewControllers(
+            home: homeViewController,
+            list: listViewController,
+            settings: settingsViewController
+        )
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupTabBar()
-        setupViewControllers()
     }
     
     private func setupTabBar() {
@@ -31,65 +48,60 @@ class MainTabBarController: UITabBarController {
         tabBar.scrollEdgeAppearance = appearance
     }
     
-    private func setupViewControllers() {
-        let tabOneNav = createTabOneNavigationController()
-        let tabTwoNav = createTabTwoNavigationController()
-        let tabThreeNav = createTabThreeNavigationController()
-        
-        viewControllers = [tabOneNav, tabTwoNav, tabThreeNav]
-    }
-    
-    private func createTabOneNavigationController() -> UINavigationController {
-        let tabOneViewController = TabOneViewController()
-        tabOneViewController.coordinator = coordinator
-        
-        let navigationController = NavigationManager.shared.createNavigationController(
-            rootViewController: tabOneViewController,
+    private func setupViewControllers(
+        home: UIViewController,
+        list: UIViewController,
+        settings: UIViewController
+    ) {
+        let homeNav = createNavigationController(
+            rootViewController: home,
+            title: "หน้าหลัก",
+            image: "house",
+            selectedImage: "house.fill",
             style: .default
         )
         
-        navigationController.tabBarItem = UITabBarItem(
-            title: "หน้าแรก",
-            image: UIImage(systemName: "house"),
-            selectedImage: UIImage(systemName: "house.fill")
-        )
-        
-        return navigationController
-    }
-    
-    private func createTabTwoNavigationController() -> UINavigationController {
-        let tabTwoViewController = TabTwoViewController()
-        tabTwoViewController.coordinator = coordinator
-        
-        let navigationController = NavigationManager.shared.createNavigationController(
-            rootViewController: tabTwoViewController,
+        let listNav = createNavigationController(
+            rootViewController: list,
+            title: "รายการ",
+            image: "list.bullet",
+            selectedImage: "list.bullet.rectangle.fill",
             style: .colored(.systemBlue)
         )
         
-        navigationController.tabBarItem = UITabBarItem(
-            title: "รายการ",
-            image: UIImage(systemName: "list.bullet"),
-            selectedImage: UIImage(systemName: "list.bullet.rectangle.fill")
+        let settingsNav = createNavigationController(
+            rootViewController: settings,
+            title: "ตั้งค่า",
+            image: "gearshape",
+            selectedImage: "gearshape.fill",
+            style: .default,
+            largeTitles: true
         )
         
-        return navigationController
+        viewControllers = [homeNav, listNav, settingsNav]
     }
     
-    private func createTabThreeNavigationController() -> UINavigationController {
-        let tabThreeViewController = TabThreeViewController()
-        tabThreeViewController.coordinator = coordinator
-        
+    private func createNavigationController(
+        rootViewController: UIViewController,
+        title: String,
+        image: String,
+        selectedImage: String,
+        style: NavigationBarStyle,
+        largeTitles: Bool = false
+    ) -> UINavigationController {
         let navigationController = NavigationManager.shared.createNavigationController(
-            rootViewController: tabThreeViewController,
-            style: .default
+            rootViewController: rootViewController,
+            style: style
         )
         
-        navigationController.navigationBar.prefersLargeTitles = true
+        if largeTitles {
+            navigationController.navigationBar.prefersLargeTitles = true
+        }
         
         navigationController.tabBarItem = UITabBarItem(
-            title: "ตั้งค่า",
-            image: UIImage(systemName: "gearshape"),
-            selectedImage: UIImage(systemName: "gearshape.fill")
+            title: title,
+            image: UIImage(systemName: image),
+            selectedImage: UIImage(systemName: selectedImage)
         )
         
         return navigationController
