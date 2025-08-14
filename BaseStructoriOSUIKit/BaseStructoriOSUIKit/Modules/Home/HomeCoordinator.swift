@@ -10,40 +10,46 @@ import Combine
 
 class HomeCoordinator: BaseCoordinator {
     private var cancellables = Set<AnyCancellable>()
+    private let container: HomeDIContainer
     
-    func createHomeViewController() -> HomeViewController {
-        // Create ViewModel
-        let viewModel = HomeViewModel()
-        
-        // Create ViewController with ViewModel
-        let viewController = HomeViewController(viewModel: viewModel)
-        viewController.coordinator = self
-        
-        // Subscribe to ViewModel events
-        subscribeToViewModelEvents(viewModel)
-        
-        return viewController
+    init(navigationController: UINavigationController, container: HomeDIContainer) {
+        self.container = container
+        super.init(navigationController: navigationController)
+        print("🔍 HomeCoordinator created: \(self)")
     }
     
-    private func subscribeToViewModelEvents(_ viewModel: HomeViewModel) {
-        viewModel.detailRequested
-            .sink { [weak self] in
-                self?.showDetail()
-            }
-            .store(in: &cancellables)
-        
-        viewModel.themeToggleRequested
-            .sink { [weak self] in
-                self?.toggleTheme()
-            }
-            .store(in: &cancellables)
+    deinit {
+        print("🔍 HomeCoordinator deinit: \(self)")
     }
     
     func showDetail() {
-        let detailViewController = HomeDetailViewController()
+        print("🔍 HomeCoordinator showDetail called")
+        print("🔍 NavigationController: \(navigationController)")
+        print("🔍 NavigationController viewControllers count: \(navigationController.viewControllers.count)")
+        
+        // สร้าง DetailViewController ผ่าน Module DI Container
+        let detailViewController = container.makeHomeDetailViewController()
         detailViewController.coordinator = self
         
+        // Hide TabBar when pushing (full screen)
+        detailViewController.hidesBottomBarWhenPushed = true
+        
         navigationController.pushViewController(detailViewController, animated: true)
+        
+        print("🔍 After push - viewControllers count: \(navigationController.viewControllers.count)")
+    }
+    
+    func showDetailModal() {
+        print("🔍 HomeCoordinator showDetailModal called")
+        
+        let detailViewController = container.makeHomeDetailViewController()
+        detailViewController.coordinator = self
+        
+        // Wrap in NavigationController for modal presentation
+        let modalNavController = UINavigationController(rootViewController: detailViewController)
+        modalNavController.modalPresentationStyle = .fullScreen
+        
+        navigationController.present(modalNavController, animated: true)
     }
     
     private func toggleTheme() {
@@ -59,100 +65,5 @@ class HomeCoordinator: BaseCoordinator {
                 }
             }
         }
-    }
-}
-
-// MARK: - Detail View Controller
-class HomeDetailViewController: UIViewController, NavigationConfigurable {
-    
-    weak var coordinator: HomeCoordinator?
-    
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "หน้ารายละเอียด"
-        label.font = UIFont.systemFont(ofSize: 28, weight: .bold)
-        label.textColor = .label
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let descriptionLabel: UILabel = {
-        let label = UILabel()
-        label.text = "นี่คือตัวอย่างการ navigate ด้วย Coordinator pattern\nโดยไม่ต้องใช้ Storyboard"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .regular)
-        label.textColor = .secondaryLabel
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private lazy var backButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("กลับไปหน้าแรก", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
-        button.backgroundColor = .systemGreen
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 12
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(backButtonTapped), for: .touchUpInside)
-        return button
-    }()
-    
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
-    }
-    
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .title("รายละเอียด")
-            .style(.default)
-            .rightButton(image: UIImage(systemName: "square.and.arrow.up")) { [weak self] in
-                self?.shareButtonTapped()
-            }
-            .build()
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        configureNavigationBar()
-    }
-    
-    private func setupUI() {
-        view.backgroundColor = .systemBackground
-        
-        view.addSubview(titleLabel)
-        view.addSubview(descriptionLabel)
-        view.addSubview(backButton)
-        
-        NSLayoutConstraint.activate([
-            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -50),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
-            descriptionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            descriptionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
-            backButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 40),
-            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            backButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            backButton.heightAnchor.constraint(equalToConstant: 50)
-        ])
-    }
-    
-    @objc private func backButtonTapped() {
-        navigationController?.popViewController(animated: true)
-    }
-    
-    private func shareButtonTapped() {
-        let activityController = UIActivityViewController(
-            activityItems: ["แชร์จาก BaseStructor iOS App"],
-            applicationActivities: nil
-        )
-        present(activityController, animated: true)
     }
 }

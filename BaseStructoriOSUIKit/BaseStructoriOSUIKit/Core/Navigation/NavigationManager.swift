@@ -164,7 +164,17 @@ class NavigationManager {
         navigationController.navigationBar.isTranslucent = config.isTranslucent
         navigationController.navigationBar.prefersLargeTitles = config.prefersLargeTitles
     }
+    
+    // MARK: - Push Methods
+    func pushViewController(_ viewController: UIViewController, 
+                          on navigationController: UINavigationController, 
+                          hideTabBar: Bool = false,
+                          animated: Bool = true) {
+        viewController.hidesBottomBarWhenPushed = hideTabBar
+        navigationController.pushViewController(viewController, animated: animated)
+    }
 }
+
 
 // MARK: - CALayer Extension
 extension CALayer {

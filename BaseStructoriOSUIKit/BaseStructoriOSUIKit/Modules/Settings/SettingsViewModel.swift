@@ -10,6 +10,9 @@ import Combine
 
 class SettingsViewModel: ObservableObject {
     
+    // MARK: - Services
+    private let userService: UserServiceProtocol
+    
     // MARK: - Published Properties
     @Published var title: String = "การตั้งค่า"
     @Published var description: String = "ปรับแต่งและจัดการการตั้งค่าของแอปพลิเคชัน"
@@ -54,7 +57,8 @@ class SettingsViewModel: ObservableObject {
     let availableFontSizes = ["เล็ก", "ปกติ", "ใหญ่", "ใหญ่มาก"]
     
     // MARK: - Initialization
-    init() {
+    init(userService: UserServiceProtocol) {
+        self.userService = userService
         loadSettings()
     }
     

@@ -9,9 +9,11 @@ import UIKit
 
 class AppCoordinator: BaseCoordinator {
     private let window: UIWindow
+    private let container: DIContainer
     
-    init(window: UIWindow) {
+    init(window: UIWindow, container: DIContainer = AppDIContainer.shared) {
         self.window = window
+        self.container = container
         super.init(navigationController: UINavigationController())
     }
     
@@ -35,13 +37,22 @@ class AppCoordinator: BaseCoordinator {
     }
     
     private func showMainApp() {
+        print("🔍 AppCoordinator showMainApp() called")
         // Clear loading coordinator
         childCoordinators.removeAll()
         
-        // Start main coordinator
-        let mainCoordinator = MainCoordinator(navigationController: navigationController)
+        // Start main coordinator through DI Container
+        let mainCoordinator = container.makeMainCoordinator()
         addChildCoordinator(mainCoordinator)
+        print("🔍 AppCoordinator created MainCoordinator: \(mainCoordinator)")
+        
+        // Start the coordinator first, then get the TabBar
         mainCoordinator.start()
+        print("🔍 AppCoordinator called mainCoordinator.start()")
+        
+        // Set TabBar as window root directly
+        window.rootViewController = mainCoordinator.getTabBarController()
+        print("🔍 AppCoordinator set window root to TabBarController")
     }
 }
 

@@ -10,27 +10,11 @@ import Combine
 
 class ListCoordinator: BaseCoordinator {
     private var cancellables = Set<AnyCancellable>()
+    private let container: ListDIContainer
     
-    func createListViewController() -> ListViewController {
-        // Create ViewModel
-        let viewModel = ListViewModel()
-        
-        // Create ViewController with ViewModel
-        let viewController = ListViewController(viewModel: viewModel)
-        viewController.coordinator = self
-        
-        // Subscribe to ViewModel events
-        subscribeToViewModelEvents(viewModel)
-        
-        return viewController
-    }
-    
-    private func subscribeToViewModelEvents(_ viewModel: ListViewModel) {
-        viewModel.modalRequested
-            .sink { [weak self] in
-                self?.showModal()
-            }
-            .store(in: &cancellables)
+    init(navigationController: UINavigationController, container: ListDIContainer) {
+        self.container = container
+        super.init(navigationController: navigationController)
     }
     
     func showModal() {
@@ -42,90 +26,26 @@ class ListCoordinator: BaseCoordinator {
         
         navigationController.present(modalNavController, animated: true)
     }
-}
-
-// MARK: - Modal View Controller
-class ListModalViewController: UIViewController, NavigationConfigurable {
     
-    weak var coordinator: ListCoordinator?
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Modal จาก Coordinator"
-        label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        label.textColor = .label
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private let descriptionLabel: UILabel = {
-        let label = UILabel()
-        label.text = "นี่คือตัวอย่างการแสดง Modal\nผ่าน Coordinator pattern"
-        label.font = UIFont.systemFont(ofSize: 16, weight: .regular)
-        label.textColor = .secondaryLabel
-        label.textAlignment = .center
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
-    private lazy var dismissButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("ปิดหน้าต่าง", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
-        button.backgroundColor = .systemRed
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 12
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(dismissButtonTapped), for: .touchUpInside)
-        return button
-    }()
-    
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
-    }
-    
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .title("Modal Example")
-            .style(.default)
-            .leftButton(image: UIImage(systemName: "xmark")) { [weak self] in
-                self?.dismissButtonTapped()
-            }
-            .build()
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupUI()
-        configureNavigationBar()
-    }
-    
-    private func setupUI() {
-        view.backgroundColor = .systemBackground
+    func showActionSheet() {
+        let actionSheet = UIAlertController(title: "เลือกการกระทำ", message: "กรุณาเลือกตัวเลือก", preferredStyle: .actionSheet)
         
-        view.addSubview(titleLabel)
-        view.addSubview(descriptionLabel)
-        view.addSubview(dismissButton)
+        actionSheet.addAction(UIAlertAction(title: "ตัวเลือก 1", style: .default) { _ in
+            print("เลือกตัวเลือก 1")
+        })
         
-        NSLayoutConstraint.activate([
-            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -50),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
-            descriptionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            descriptionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
-            dismissButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 40),
-            dismissButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            dismissButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            dismissButton.heightAnchor.constraint(equalToConstant: 50)
-        ])
+        actionSheet.addAction(UIAlertAction(title: "ตัวเลือก 2", style: .default) { _ in
+            print("เลือกตัวเลือก 2")
+        })
+        
+        actionSheet.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))
+        
+        navigationController.present(actionSheet, animated: true)
     }
     
-    @objc private func dismissButtonTapped() {
-        dismiss(animated: true)
+    func showAlert() {
+        let alert = UIAlertController(title: "แจ้งเตือน", message: "นี่คือการแจ้งเตือนจาก Coordinator", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "ตกลง", style: .default))
+        navigationController.present(alert, animated: true)
     }
 }

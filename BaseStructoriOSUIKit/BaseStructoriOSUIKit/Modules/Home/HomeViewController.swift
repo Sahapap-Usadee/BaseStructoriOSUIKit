@@ -11,7 +11,11 @@ import Combine
 class HomeViewController: UIViewController, NavigationConfigurable {
     
     // MARK: - Properties
-    weak var coordinator: HomeCoordinator?
+    weak var coordinator: HomeCoordinator? {
+        didSet {
+            print("🔍 HomeViewController coordinator set to: \(coordinator)")
+        }
+    }
     private let viewModel: HomeViewModel
     private var cancellables = Set<AnyCancellable>()
     
@@ -98,6 +102,21 @@ class HomeViewController: UIViewController, NavigationConfigurable {
         super.viewDidLoad()
         setupUI()
         configureNavigationBar()
+        
+        print("🔍 HomeViewController viewDidLoad")
+        print("🔍 navigationController: \(navigationController)")
+        print("🔍 navigationController?.viewControllers: \(navigationController?.viewControllers)")
+        print("🔍 coordinator in viewDidLoad: \(coordinator)")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        print("🔍 HomeViewController viewWillAppear - coordinator: \(coordinator)")
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        print("🔍 HomeViewController viewDidAppear - coordinator: \(coordinator)")
     }
     
     // MARK: - Setup
@@ -140,7 +159,17 @@ class HomeViewController: UIViewController, NavigationConfigurable {
     
     // MARK: - Actions
     @objc private func showDetailTapped() {
-        coordinator?.showDetail()
+        print("🔍 HomeViewController showDetailTapped called")
+        print("🔍 Self: \(self)")
+        print("🔍 Coordinator reference: \(coordinator)")
+        print("🔍 Coordinator address: \(coordinator.map { "\($0)" } ?? "nil")")
+        
+        if let coordinator = coordinator {
+            print("🔍 Calling coordinator.showDetail()")
+            coordinator.showDetail()
+        } else {
+            print("❌ Coordinator is nil!")
+        }
     }
     
     private func rightButtonTapped() {

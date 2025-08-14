@@ -10,6 +10,9 @@ import Combine
 
 class ListViewModel: ObservableObject {
     
+    // MARK: - Services
+    private let networkService: NetworkServiceProtocol
+    
     // MARK: - Published Properties  
     @Published var title: String = "รายการ"
     @Published var description: String = "จัดการรายการและแสดง Modal Presentations"
@@ -39,7 +42,8 @@ class ListViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
-    init() {
+    init(networkService: NetworkServiceProtocol) {
+        self.networkService = networkService
         loadInitialData()
     }
     
