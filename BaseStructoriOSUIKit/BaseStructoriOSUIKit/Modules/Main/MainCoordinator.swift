@@ -15,7 +15,7 @@ class MainCoordinator: BaseCoordinator {
     init(window: UIWindow, container: DIContainer = AppDIContainer.shared) {
         self.window = window
         self.container = container
-        super.init()
+        super.init(navigationController: UINavigationController())
     }
     
     override func start() {

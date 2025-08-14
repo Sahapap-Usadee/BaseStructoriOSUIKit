@@ -39,6 +39,7 @@ class AppDIContainer: DIContainer {
     
     // MARK: - Services
     func makeUserService() -> UserServiceProtocol {
+        print("🔍 AppDIContainer.makeUserService() called - UserService instance: \(userService)")
         return userService
     }
     

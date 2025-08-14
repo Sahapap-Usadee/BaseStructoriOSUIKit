@@ -33,6 +33,7 @@ extension HomeDIContainer: HomeFactoryProtocol {
     
     func makeHomeViewModel() -> HomeViewModel {
         let userService = appDIContainer.makeUserService()
+        print("🏠 HomeDIContainer - UserService: \(userService)")
         return HomeViewModel(userService: userService)
     }
     

@@ -48,8 +48,7 @@ class HomeCoordinator: BaseCoordinator {
         // Wrap in NavigationController for modal presentation
         let modalNavController = UINavigationController(rootViewController: detailViewController)
         modalNavController.modalPresentationStyle = .fullScreen
-        
-        navigationController.present(modalNavController, animated: true)
+        presentViewController(modalNavController)
     }
     
     private func toggleTheme() {
