@@ -86,10 +86,6 @@ class SettingsViewModel: ObservableObject {
         saveSettings()
     }
     
-    func showAbout() {
-        aboutRequestedSubject.send()
-    }
-    
     func resetToDefaults() {
         isDarkModeEnabled = false
         isNotificationEnabled = true

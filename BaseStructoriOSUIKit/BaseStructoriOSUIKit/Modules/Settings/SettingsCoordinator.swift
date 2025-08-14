@@ -17,6 +17,13 @@ class SettingsCoordinator: BaseCoordinator {
         super.init(navigationController: navigationController)
     }
     
+    override func start() {
+        let settingsViewController = container.makeSettingsViewController()
+        settingsViewController.coordinator = self
+        
+        navigationController.setViewControllers([settingsViewController], animated: false)
+    }
+    
     private func handleThemeChange(_ isDarkMode: Bool) {
         // Handle theme change globally
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -28,13 +35,13 @@ class SettingsCoordinator: BaseCoordinator {
         }
     }
     
-    private func showAboutScreen() {
+    func showAboutScreen() {
         let aboutViewController = AboutViewController()
         let navController = UINavigationController(rootViewController: aboutViewController)
         navigationController.present(navController, animated: true)
     }
     
-    private func showResetConfirmation() {
+    func showResetConfirmation() {
         let alert = UIAlertController(
             title: "รีเซ็ตการตั้งค่า",
             message: "คุณแน่ใจหรือไม่ที่จะรีเซ็ตการตั้งค่าทั้งหมดกลับเป็นค่าเริ่มต้น?",

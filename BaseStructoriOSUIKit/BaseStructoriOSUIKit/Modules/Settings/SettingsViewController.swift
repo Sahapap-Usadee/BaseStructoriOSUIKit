@@ -12,7 +12,7 @@ class SettingsViewController: UIViewController, NavigationConfigurable {
 
     // MARK: - Properties
     weak var coordinator: SettingsCoordinator?
-    private let viewModel: SettingsViewModel
+    let viewModel: SettingsViewModel  // Changed to internal access
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
@@ -186,7 +186,7 @@ extension SettingsViewController: UITableViewDelegate {
         case .language:
             showAlert(title: "ภาษา", message: "เปลี่ยนภาษาแอปพลิเคชัน")
         case .about:
-            showAboutApp()
+            coordinator?.showAboutScreen()
         case .help:
             showAlert(title: "ช่วยเหลือ", message: "ศูนย์ช่วยเหลือ")
         case .contact:

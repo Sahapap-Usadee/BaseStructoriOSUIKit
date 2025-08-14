@@ -31,8 +31,7 @@ class ListDIContainer {
 extension ListDIContainer: ListFactoryProtocol {
     
     func makeListViewModel() -> ListViewModel {
-        let networkService = appDIContainer.makeNetworkService()
-        return ListViewModel(networkService: networkService)
+        return ListViewModel()
     }
     
     func makeListViewController() -> ListViewController {

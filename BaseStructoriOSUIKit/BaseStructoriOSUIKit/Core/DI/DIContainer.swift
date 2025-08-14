@@ -10,9 +10,7 @@ import UIKit
 // MARK: - DI Container Protocol
 protocol DIContainer {
     // Core Services เท่านั้น
-    func makeNetworkService() -> NetworkServiceProtocol
     func makeUserService() -> UserServiceProtocol
-    func makeImageService() -> ImageServiceProtocol
     
     // Module DI Containers
     func makeHomeDIContainer() -> HomeDIContainer
@@ -20,19 +18,17 @@ protocol DIContainer {
     func makeSettingsDIContainer() -> SettingsDIContainer
     
     // Main Coordinator
-    func makeMainCoordinator() -> MainCoordinator
+    func makeMainCoordinator(window: UIWindow) -> MainCoordinator
 }
 
-// MARK: - App DI Container
+//MARK: - App DI Container
 class AppDIContainer: DIContainer {
     
     // Singleton instance
     static let shared = AppDIContainer()
     
     // Services (lazy loading)
-    private lazy var networkService: NetworkServiceProtocol = NetworkService()
     private lazy var userService: UserServiceProtocol = UserService()
-    private lazy var imageService: ImageServiceProtocol = ImageService(networkService: networkService)
     
     // Module DI Containers (lazy loading)
     private lazy var homeDIContainer: HomeDIContainer = HomeDIContainer(appDIContainer: self)
@@ -42,16 +38,8 @@ class AppDIContainer: DIContainer {
     private init() {}
     
     // MARK: - Services
-    func makeNetworkService() -> NetworkServiceProtocol {
-        return networkService
-    }
-    
     func makeUserService() -> UserServiceProtocol {
         return userService
-    }
-    
-    func makeImageService() -> ImageServiceProtocol {
-        return imageService
     }
     
     // MARK: - Module DI Containers
@@ -68,7 +56,7 @@ class AppDIContainer: DIContainer {
     }
     
     // MARK: - Main Coordinator
-    func makeMainCoordinator() -> MainCoordinator {
-        return MainCoordinator(container: self)
+    func makeMainCoordinator(window: UIWindow) -> MainCoordinator {
+        return MainCoordinator(window: window, container: self)
     }
 }

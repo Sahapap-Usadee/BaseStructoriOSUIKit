@@ -33,8 +33,7 @@ extension HomeDIContainer: HomeFactoryProtocol {
     
     func makeHomeViewModel() -> HomeViewModel {
         let userService = appDIContainer.makeUserService()
-        let networkService = appDIContainer.makeNetworkService()
-        return HomeViewModel(userService: userService, networkService: networkService)
+        return HomeViewModel(userService: userService)
     }
     
     func makeHomeViewController() -> HomeViewController {

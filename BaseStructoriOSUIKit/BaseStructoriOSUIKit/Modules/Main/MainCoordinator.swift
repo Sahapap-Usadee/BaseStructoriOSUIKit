@@ -11,13 +11,15 @@ class MainCoordinator: BaseCoordinator {
     
     private var mainTabBarController: MainTabBarController?
     private let container: DIContainer
+    private let window: UIWindow
     
     // เก็บ coordinators ลูกไว้
     private var homeCoordinator: HomeCoordinator?
     private var listCoordinator: ListCoordinator?
     private var settingsCoordinator: SettingsCoordinator?
     
-    init(container: DIContainer = AppDIContainer.shared) {
+    init(window: UIWindow, container: DIContainer = AppDIContainer.shared) {
+        self.window = window
         self.container = container
         super.init(navigationController: UINavigationController())
     }
@@ -37,6 +39,11 @@ class MainCoordinator: BaseCoordinator {
         
         mainTabBarController.setViewControllers(tabs)
         print("🔍 Created TabBarController with 3 tabs")
+        
+        // Set TabBar as window root และ make key window
+        window.rootViewController = mainTabBarController
+        window.makeKeyAndVisible()
+        print("🔍 MainCoordinator set window root to TabBarController and made key")
     }
     
         // MARK: - สร้าง Tabs แบบง่าย ๆ
@@ -120,13 +127,6 @@ class MainCoordinator: BaseCoordinator {
         settingsViewController.coordinator = settingsCoordinator
         
         return navigationController
-    }
-    
-    func getTabBarController() -> UITabBarController {
-        guard let mainTabBarController = mainTabBarController else {
-            fatalError("MainTabBarController is nil! Make sure to call start() first.")
-        }
-        return mainTabBarController
     }
 
 }

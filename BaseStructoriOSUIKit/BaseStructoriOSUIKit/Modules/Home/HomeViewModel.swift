@@ -12,7 +12,6 @@ class HomeViewModel: ObservableObject {
     
     // MARK: - Services
     private let userService: UserServiceProtocol
-    private let networkService: NetworkServiceProtocol
     
     // MARK: - Published Properties
     @Published var title: String = "หน้าหลัก"
@@ -25,9 +24,8 @@ class HomeViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
-    init(userService: UserServiceProtocol, networkService: NetworkServiceProtocol) {
+    init(userService: UserServiceProtocol) {
         self.userService = userService
-        self.networkService = networkService
         loadInitialData()
     }
     

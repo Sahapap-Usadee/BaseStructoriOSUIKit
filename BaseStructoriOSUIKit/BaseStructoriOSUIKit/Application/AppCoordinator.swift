@@ -42,17 +42,13 @@ class AppCoordinator: BaseCoordinator {
         childCoordinators.removeAll()
         
         // Start main coordinator through DI Container
-        let mainCoordinator = container.makeMainCoordinator()
+        let mainCoordinator = container.makeMainCoordinator(window: window)
         addChildCoordinator(mainCoordinator)
         print("🔍 AppCoordinator created MainCoordinator: \(mainCoordinator)")
         
-        // Start the coordinator first, then get the TabBar
+        // MainCoordinator จะจัดการ window เอง
         mainCoordinator.start()
-        print("🔍 AppCoordinator called mainCoordinator.start()")
-        
-        // Set TabBar as window root directly
-        window.rootViewController = mainCoordinator.getTabBarController()
-        print("🔍 AppCoordinator set window root to TabBarController")
+        print("🔍 AppCoordinator called mainCoordinator.start() - MainCoordinator handles window internally")
     }
 }
 
