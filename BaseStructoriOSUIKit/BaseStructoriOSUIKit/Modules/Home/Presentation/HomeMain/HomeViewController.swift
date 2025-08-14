@@ -111,7 +111,7 @@ class HomeViewController: UIViewController, NavigationConfigurable {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("🔍 HomeViewController viewWillAppear - coordinator: \(coordinator)")
+        viewModel.userService.updatecurrentUser(user: .init(id: "1", name: "ter change", email: ""))
     }
     
     override func viewDidAppear(_ animated: Bool) {

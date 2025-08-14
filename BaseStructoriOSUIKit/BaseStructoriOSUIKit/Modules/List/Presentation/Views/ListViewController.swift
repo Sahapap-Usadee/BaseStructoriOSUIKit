@@ -104,7 +104,11 @@ class ListViewController: UIViewController, NavigationConfigurable {
         setupUI()
         configureNavigationBar()
     }
-    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.userService.updatecurrentUser(user: .init(id: "2", name: "ter2 change", email: ""))
+    }
+
     // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = .systemBackground

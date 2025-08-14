@@ -11,8 +11,8 @@ import Combine
 class HomeViewModel: ObservableObject {
     
     // MARK: - Services
-    private let userService: UserServiceProtocol
-    
+    public let userService: UserServiceProtocol
+
     // MARK: - Published Properties
     @Published var title: String = "หน้าหลัก"
     @Published var description: String = "ยินดีต้อนรับสู่แอปพลิเคชัน iOS ที่ใช้ MVVM-C Architecture"

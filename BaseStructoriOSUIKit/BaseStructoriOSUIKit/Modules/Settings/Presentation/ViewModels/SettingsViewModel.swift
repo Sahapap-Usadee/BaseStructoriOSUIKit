@@ -11,8 +11,8 @@ import Combine
 class SettingsViewModel: ObservableObject {
     
     // MARK: - Services
-    private let userService: UserServiceProtocol
-    
+    public let userService: UserServiceProtocol
+
     // MARK: - Published Properties
     @Published var title: String = "การตั้งค่า"
     @Published var description: String = "ปรับแต่งและจัดการการตั้งค่าของแอปพลิเคชัน"
@@ -60,6 +60,8 @@ class SettingsViewModel: ObservableObject {
     init(userService: UserServiceProtocol) {
         self.userService = userService
         loadSettings()
+//        print("before ter test \(userService.getCurrentUser()?.name)")
+//        userService.updatecurrentUser(user: .init(id: "1", name: "ter change", email: ""))
     }
     
     // MARK: - Public Methods

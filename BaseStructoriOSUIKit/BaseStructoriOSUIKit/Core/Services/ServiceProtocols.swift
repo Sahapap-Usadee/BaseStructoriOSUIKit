@@ -79,17 +79,24 @@ enum NetworkError: Error, LocalizedError {
 // MARK: - User Service  
 protocol UserServiceProtocol {
     func getCurrentUser() -> AppUser?
+    func updatecurrentUser(user: AppUser)
     func login(email: String, password: String) async throws -> AppUser
     func logout() async throws
 }
 
 class UserService: UserServiceProtocol {
+
+    
     private var currentUser: AppUser?
     
     func getCurrentUser() -> AppUser? {
         return currentUser
     }
-    
+
+    func updatecurrentUser(user: AppUser) {
+        currentUser = user
+    }
+
     func login(email: String, password: String) async throws -> AppUser {
         // TODO: Implement login
         let user = AppUser(id: "1", name: "Test User", email: email)

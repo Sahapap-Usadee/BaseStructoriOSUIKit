@@ -12,7 +12,7 @@ class MainCoordinator: BaseCoordinator {
     private let container: DIContainer
     private let window: UIWindow
     
-    init(window: UIWindow, container: DIContainer = AppDIContainer.shared) {
+    init(window: UIWindow, container: DIContainer) {
         self.window = window
         self.container = container
         super.init(navigationController: UINavigationController())

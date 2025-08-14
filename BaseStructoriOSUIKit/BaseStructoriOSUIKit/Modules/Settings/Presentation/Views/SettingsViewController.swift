@@ -74,7 +74,12 @@ class SettingsViewController: UIViewController, NavigationConfigurable {
         setupUI()
         configureNavigationBar()
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        print("after ter test \(viewModel.userService.getCurrentUser()?.name)")
+    }
+
     private func setupUI() {
         view.backgroundColor = .systemGroupedBackground
         

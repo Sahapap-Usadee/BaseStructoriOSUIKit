@@ -120,17 +120,6 @@ class BaseCoordinator: Coordinator {
     }
 }
 
-//// MARK: - 🔄 Reactive Coordinator (ใช้ Combine)
-//class ReactiveCoordinator: BaseCoordinator {
-//    var cancellables = Set<AnyCancellable>()
-//    
-//    override func finish() {
-//        // ปิด subscriptions ก่อน
-//        cancellables.removeAll()
-//        super.finish()
-//    }
-//}
-
 // MARK: - 📱 Navigation Helpers
 extension BaseCoordinator {
     

@@ -9,8 +9,10 @@ import Foundation
 import Combine
 
 class ListViewModel: ObservableObject {
-    
-    // MARK: - Published Properties  
+
+    // MARK: - Services
+    public let userService: UserServiceProtocol
+    // MARK: - Published Properties
     @Published var title: String = "รายการ"
     @Published var description: String = "จัดการรายการและแสดง Modal Presentations"
     @Published var items: [ListItem] = []
@@ -39,7 +41,8 @@ class ListViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
-    init() {
+    init(userService: UserServiceProtocol) {
+        self.userService = userService
         loadInitialData()
     }
     
