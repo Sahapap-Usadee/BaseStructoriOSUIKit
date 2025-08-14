@@ -8,8 +8,7 @@
 import UIKit
 
 class MainCoordinator: BaseCoordinator {
-    
-    private var mainTabBarController: MainTabBarController?
+
     private let container: DIContainer
     private let window: UIWindow
     
@@ -28,8 +27,7 @@ class MainCoordinator: BaseCoordinator {
         print("🔍 MainCoordinator start() called")
         let mainTabBarController = MainTabBarController()
         mainTabBarController.coordinator = self
-        self.mainTabBarController = mainTabBarController
-        
+
         // สร้าง 3 tabs แบบง่าย ๆ
         let tabs = [
             createHomeTab(),
