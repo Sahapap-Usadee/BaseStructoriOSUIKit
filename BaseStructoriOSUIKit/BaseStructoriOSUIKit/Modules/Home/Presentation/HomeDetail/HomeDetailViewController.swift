@@ -89,7 +89,7 @@ class HomeDetailViewController: UIViewController, NavigationConfigurable {
     }
     
     @objc private func backButtonTapped() {
-        navigationController?.popViewController(animated: true)
+        coordinator?.popViewController()
     }
     
     private func shareButtonTapped() {

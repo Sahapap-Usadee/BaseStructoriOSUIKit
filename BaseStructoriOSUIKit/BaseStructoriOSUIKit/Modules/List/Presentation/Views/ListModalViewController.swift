@@ -89,6 +89,6 @@ class ListModalViewController: UIViewController, NavigationConfigurable {
     }
     
     @objc private func dismissButtonTapped() {
-        dismiss(animated: true)
+         coordinator?.dismissViewController()
     }
 }
