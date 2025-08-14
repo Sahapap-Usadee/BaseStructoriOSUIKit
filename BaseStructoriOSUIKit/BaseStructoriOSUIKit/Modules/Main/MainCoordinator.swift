@@ -12,15 +12,10 @@ class MainCoordinator: BaseCoordinator {
     private let container: DIContainer
     private let window: UIWindow
     
-    // เก็บ coordinators ลูกไว้
-    private var homeCoordinator: HomeCoordinator?
-    private var listCoordinator: ListCoordinator?
-    private var settingsCoordinator: SettingsCoordinator?
-    
     init(window: UIWindow, container: DIContainer = AppDIContainer.shared) {
         self.window = window
         self.container = container
-        super.init(navigationController: UINavigationController())
+        super.init()
     }
     
     override func start() {
@@ -65,9 +60,9 @@ class MainCoordinator: BaseCoordinator {
         
         // สร้าง Coordinator ผ่าน Module DI Container
         let homeCoordinator = homeDIContainer.makeHomeFlowCoordinator(navigationController: navigationController)
-        self.homeCoordinator = homeCoordinator // เก็บไว้ไม่ให้หาย
+        addChildCoordinator(homeCoordinator) // ✅ ใช้ built-in method
         print("🔍 Created HomeCoordinator: \(homeCoordinator)")
-        print("🔍 Stored in MainCoordinator.homeCoordinator: \(self.homeCoordinator)")
+        print("🔍 Added to childCoordinators: \(childCoordinators.count) coordinators")
         
         homeViewController.coordinator = homeCoordinator
         print("🔍 Set coordinator to HomeViewController: \(homeViewController.coordinator)")
@@ -95,7 +90,7 @@ class MainCoordinator: BaseCoordinator {
         
         // สร้าง Coordinator ผ่าน Module DI Container
         let listCoordinator = listDIContainer.makeListFlowCoordinator(navigationController: navigationController)
-        self.listCoordinator = listCoordinator // เก็บไว้ไม่ให้หาย
+        addChildCoordinator(listCoordinator) // ✅ ใช้ built-in method
         listViewController.coordinator = listCoordinator
         
         return navigationController
@@ -121,7 +116,7 @@ class MainCoordinator: BaseCoordinator {
         
         // สร้าง Coordinator ผ่าน Module DI Container
         let settingsCoordinator = settingsDIContainer.makeSettingsFlowCoordinator(navigationController: navigationController)
-        self.settingsCoordinator = settingsCoordinator // เก็บไว้ไม่ให้หาย
+        addChildCoordinator(settingsCoordinator) // ✅ ใช้ built-in method
         settingsViewController.coordinator = settingsCoordinator
         
         return navigationController
