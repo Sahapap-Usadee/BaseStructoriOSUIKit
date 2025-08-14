@@ -13,6 +13,7 @@ protocol DIContainer {
     func makeUserService() -> UserServiceProtocol
     
     // Module DI Containers
+    func makeTodayDIContainer() -> TodayDIContainer
     func makeHomeDIContainer() -> HomeDIContainer
     func makeListDIContainer() -> ListDIContainer
     func makeSettingsDIContainer() -> SettingsDIContainer
@@ -31,6 +32,7 @@ class AppDIContainer: DIContainer {
     private lazy var userService: UserServiceProtocol = UserService()
     
     // Module DI Containers (lazy loading)
+    private lazy var todayDIContainer: TodayDIContainer = TodayDIContainer(appDIContainer: self)
     private lazy var homeDIContainer: HomeDIContainer = HomeDIContainer(appDIContainer: self)
     private lazy var listDIContainer: ListDIContainer = ListDIContainer(appDIContainer: self)
     private lazy var settingsDIContainer: SettingsDIContainer = SettingsDIContainer(appDIContainer: self)
@@ -44,6 +46,10 @@ class AppDIContainer: DIContainer {
     }
     
     // MARK: - Module DI Containers
+    func makeTodayDIContainer() -> TodayDIContainer {
+        return todayDIContainer
+    }
+    
     func makeHomeDIContainer() -> HomeDIContainer {
         return homeDIContainer
     }

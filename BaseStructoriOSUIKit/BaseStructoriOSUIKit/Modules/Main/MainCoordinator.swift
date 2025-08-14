@@ -23,20 +23,52 @@ class MainCoordinator: BaseCoordinator {
         let mainTabBarController = MainTabBarController()
         mainTabBarController.coordinator = self
 
-        // สร้าง 3 tabs แบบง่าย ๆ
+        // สร้าง 4 tabs แบบง่าย ๆ (เพิ่ม Today tab)
         let tabs = [
+            createTodayTab(),
             createHomeTab(),
             createListTab(), 
             createSettingsTab()
         ]
         
         mainTabBarController.setViewControllers(tabs)
-        print("🔍 Created TabBarController with 3 tabs")
+        print("🔍 Created TabBarController with 4 tabs")
         
         // Set TabBar as window root และ make key window
         window.rootViewController = mainTabBarController
         window.makeKeyAndVisible()
         print("🔍 MainCoordinator set window root to TabBarController and made key")
+    }
+    
+        // MARK: - สร้าง Today Tab (ตัวแรก)
+    private func createTodayTab() -> UINavigationController {
+        // สร้าง ViewController ผ่าน Module DI Container
+        let todayDIContainer = container.makeTodayDIContainer()
+        let todayViewController = todayDIContainer.makeTodayViewController()
+        
+        // สร้าง NavigationController
+        let navigationController = NavigationManager.shared.createNavigationController(
+            rootViewController: todayViewController,
+            style: .default
+        )
+        
+        // ตั้งค่า TabBar Item
+        navigationController.tabBarItem = UITabBarItem(
+            title: "Today",
+            image: UIImage(systemName: "doc.text.image"),
+            selectedImage: UIImage(systemName: "doc.text.image.fill")
+        )
+        
+        // สร้าง Coordinator ผ่าน Module DI Container
+        let todayCoordinator = todayDIContainer.makeTodayFlowCoordinator(navigationController: navigationController)
+        addChildCoordinator(todayCoordinator) // ✅ ใช้ built-in method
+        print("🔍 Created TodayCoordinator: \(todayCoordinator)")
+        print("🔍 Added to childCoordinators: \(childCoordinators.count) coordinators")
+        
+        todayViewController.coordinator = todayCoordinator
+        print("🔍 Set coordinator to TodayViewController: \(todayViewController.coordinator)")
+        
+        return navigationController
     }
     
         // MARK: - สร้าง Tabs แบบง่าย ๆ

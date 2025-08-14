@@ -18,10 +18,7 @@ class AppCoordinator: BaseCoordinator {
     }
     
     override func start() {
-        // Setup global navigation appearance
-        NavigationManager.shared.setupGlobalAppearance()
-        
-        // Start with loading coordinator
+        print("🚀 AppCoordinator: Starting app flow")
         showLoadingScreen()
     }
     
