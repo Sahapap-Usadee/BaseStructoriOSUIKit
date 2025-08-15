@@ -87,9 +87,6 @@ class HomeViewController: UIViewController, NavigationConfigurable {
         return NavigationBuilder()
             .title("หน้าแรก")
             .style(.colored(.systemBlue))
-            .rightButton(image: UIImage(systemName: "plus")) { [weak self] in
-                self?.rightButtonTapped()
-            }
             .build()
     }
     
@@ -193,14 +190,17 @@ extension HomeViewController: UITableViewDataSource {
 extension HomeViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        let alert = UIAlertController(
-            title: "เลือก: \(sampleItems[indexPath.row])",
-            message: "คุณเลือกรายการที่ \(indexPath.row + 1)",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "ตกลง", style: .default))
-        present(alert, animated: true)
+        if indexPath.row == 0 {
+            coordinator?.showDetail(hidesBottomBar: false)
+        } else {
+            let alert = UIAlertController(
+                title: "เลือก: \(sampleItems[indexPath.row])",
+                message: "คุณเลือกรายการที่ \(indexPath.row + 1)",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "ตกลง", style: .default))
+            present(alert, animated: true)
+            }
     }
 }
 
