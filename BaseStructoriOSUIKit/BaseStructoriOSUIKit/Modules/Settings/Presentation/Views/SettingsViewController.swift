@@ -250,7 +250,7 @@ extension SettingsViewController: UITableViewDelegate {
         )
         
         alert.addAction(UIAlertAction(title: "ออกจากระบบ", style: .destructive) { _ in
-            self.showSuccessMessage("ออกจากระบบเรียบร้อย")
+            self.coordinator?.signOut()
         })
         
         alert.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))

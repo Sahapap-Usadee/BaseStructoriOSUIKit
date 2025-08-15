@@ -11,7 +11,8 @@ class MainCoordinator: BaseCoordinator {
 
     private let container: DIContainer
     private let window: UIWindow
-    
+    var onSignOut: (() -> Void)?
+
     init(window: UIWindow, container: DIContainer) {
         self.window = window
         self.container = container
@@ -116,6 +117,9 @@ class MainCoordinator: BaseCoordinator {
         
         // สร้าง Coordinator ผ่าน Module DI Container
         let settingsCoordinator = settingsDIContainer.makeSettingsFlowCoordinator(navigationController: navigationController)
+        settingsCoordinator.onSignOut = { [weak self] in
+            self?.onSignOut?()
+        }
         addChildCoordinator(settingsCoordinator) // ✅ ใช้ built-in method
         settingsViewController.coordinator = settingsCoordinator
         
