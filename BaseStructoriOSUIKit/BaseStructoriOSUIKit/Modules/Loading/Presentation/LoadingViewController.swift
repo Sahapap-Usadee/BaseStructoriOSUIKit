@@ -61,10 +61,6 @@ class LoadingViewController: UIViewController, NavigationConfigurable {
     }()
     
     // MARK: - Navigation Configuration
-    var navigationBarStyle: NavigationBarStyle {
-        return .hidden
-    }
-    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
             .style(.hidden)
@@ -176,4 +172,8 @@ class LoadingViewController: UIViewController, NavigationConfigurable {
             }
             .store(in: &cancellables)
     }
+}
+
+#Preview {
+    LoadingViewController()
 }

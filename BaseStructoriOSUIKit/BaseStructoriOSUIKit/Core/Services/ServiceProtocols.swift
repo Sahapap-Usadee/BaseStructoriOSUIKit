@@ -7,6 +7,24 @@
 
 import Foundation
 
+// MARK: - User Service
+protocol UserServiceProtocol {
+    func getCurrentUser() -> AppUser?
+    func updatecurrentUser(user: AppUser)
+}
+
+class UserService: UserServiceProtocol {
+    private var currentUser: AppUser?
+
+    func getCurrentUser() -> AppUser? {
+        return currentUser
+    }
+
+    func updatecurrentUser(user: AppUser) {
+        currentUser = user
+    }
+}
+
 // MARK: - Network Service
 protocol NetworkServiceProtocol {
     func request<T: Codable>(endpoint: String, type: T.Type) async throws -> T
@@ -73,38 +91,5 @@ enum NetworkError: Error, LocalizedError {
         case .noInternetConnection:
             return "ไม่มีการเชื่อมต่ออินเทอร์เน็ต"
         }
-    }
-}
-
-// MARK: - User Service  
-protocol UserServiceProtocol {
-    func getCurrentUser() -> AppUser?
-    func updatecurrentUser(user: AppUser)
-    func login(email: String, password: String) async throws -> AppUser
-    func logout() async throws
-}
-
-class UserService: UserServiceProtocol {
-
-    
-    private var currentUser: AppUser?
-    
-    func getCurrentUser() -> AppUser? {
-        return currentUser
-    }
-
-    func updatecurrentUser(user: AppUser) {
-        currentUser = user
-    }
-
-    func login(email: String, password: String) async throws -> AppUser {
-        // TODO: Implement login
-        let user = AppUser(id: "1", name: "Test User", email: email)
-        currentUser = user
-        return user
-    }
-    
-    func logout() async throws {
-        currentUser = nil
     }
 }

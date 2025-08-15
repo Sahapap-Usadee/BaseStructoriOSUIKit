@@ -11,7 +11,8 @@ import Combine
 class SettingsCoordinator: BaseCoordinator {
     private var cancellables = Set<AnyCancellable>()
     private let container: SettingsDIContainer
-    
+    var onSignOut: (() -> Void)?
+
     init(navigationController: UINavigationController, container: SettingsDIContainer) {
         self.container = container
         super.init(navigationController: navigationController)
@@ -53,7 +54,10 @@ class SettingsCoordinator: BaseCoordinator {
         })
         
         alert.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))
-        
         navigationController.present(alert, animated: true)
+    }
+
+    func signOut() {
+        onSignOut?()
     }
 }

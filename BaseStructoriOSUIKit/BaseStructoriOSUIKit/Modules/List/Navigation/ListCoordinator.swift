@@ -26,7 +26,17 @@ class ListCoordinator: BaseCoordinator {
         
         navigationController.present(modalNavController, animated: true)
     }
-    
+
+    func showModalFull() {
+        let modalViewController = ListModalViewController()
+        modalViewController.coordinator = self
+
+        let modalNavController = UINavigationController(rootViewController: modalViewController)
+        modalNavController.modalPresentationStyle = .fullScreen
+
+        navigationController.present(modalNavController, animated: true)
+    }
+
     func showActionSheet() {
         let actionSheet = UIAlertController(title: "เลือกการกระทำ", message: "กรุณาเลือกตัวเลือก", preferredStyle: .actionSheet)
         

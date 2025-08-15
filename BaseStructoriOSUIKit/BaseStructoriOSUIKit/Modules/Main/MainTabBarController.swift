@@ -38,3 +38,7 @@ class MainTabBarController: UITabBarController {
         tabBar.scrollEdgeAppearance = appearance
     }
 }
+
+#Preview {
+    MainTabBarController()
+}

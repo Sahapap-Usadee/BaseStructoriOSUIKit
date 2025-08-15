@@ -7,13 +7,9 @@
 
 import UIKit
 
-protocol LoadingCoordinatorDelegate: AnyObject {
-    func loadingDidComplete()
-}
-
 class LoadingCoordinator: BaseCoordinator {
-    weak var delegate: LoadingCoordinatorDelegate?
-    
+    var onFinishedLoading: (() -> Void)?
+
     override func start() {
         let loadingViewController = LoadingViewController()
         loadingViewController.coordinator = self
@@ -22,6 +18,6 @@ class LoadingCoordinator: BaseCoordinator {
     }
     
     func didFinishLoading() {
-        delegate?.loadingDidComplete()
+        self.onFinishedLoading?()
     }
 }

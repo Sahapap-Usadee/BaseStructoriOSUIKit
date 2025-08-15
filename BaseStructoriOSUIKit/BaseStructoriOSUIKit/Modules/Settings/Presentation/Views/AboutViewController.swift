@@ -43,3 +43,7 @@ class AboutViewController: UIViewController {
         dismiss(animated: true)
     }
 }
+
+#Preview {
+    AboutViewController()
+}

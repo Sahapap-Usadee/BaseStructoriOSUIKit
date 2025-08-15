@@ -54,10 +54,6 @@ class SettingsViewController: UIViewController, NavigationConfigurable {
         ])
     ]
     
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
-    }
-    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
             .title("ตั้งค่า")
@@ -608,7 +604,7 @@ extension SettingsViewController: UITableViewDelegate {
         )
         
         alert.addAction(UIAlertAction(title: "ออกจากระบบ", style: .destructive) { _ in
-            self.showSuccessMessage("ออกจากระบบเรียบร้อย")
+            self.coordinator?.signOut()
         })
         
         alert.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))
@@ -683,4 +679,8 @@ class SettingsCell: UITableViewCell {
         iconImageView.image = UIImage(systemName: item.icon)
         titleLabel.text = item.title
     }
+}
+
+#Preview {
+    SettingsViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
 }

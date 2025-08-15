@@ -44,10 +44,6 @@ class HomeDetailViewController: UIViewController, NavigationConfigurable {
         return button
     }()
     
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
-    }
-    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
             .title("รายละเอียด")
@@ -61,9 +57,13 @@ class HomeDetailViewController: UIViewController, NavigationConfigurable {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         configureNavigationBar()
     }
-    
+
     private func setupUI() {
         view.backgroundColor = .systemBackground
         
@@ -89,7 +89,7 @@ class HomeDetailViewController: UIViewController, NavigationConfigurable {
     }
     
     @objc private func backButtonTapped() {
-        navigationController?.popViewController(animated: true)
+        coordinator?.popViewController()
     }
     
     private func shareButtonTapped() {
@@ -99,4 +99,8 @@ class HomeDetailViewController: UIViewController, NavigationConfigurable {
         )
         present(activityController, animated: true)
     }
+}
+
+#Preview {
+    HomeDetailViewController()
 }

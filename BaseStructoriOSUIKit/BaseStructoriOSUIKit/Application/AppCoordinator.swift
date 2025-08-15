@@ -24,7 +24,10 @@ class AppCoordinator: BaseCoordinator {
     
     private func showLoadingScreen() {
         let loadingCoordinator = LoadingCoordinator(navigationController: navigationController)
-        loadingCoordinator.delegate = self
+        loadingCoordinator.onFinishedLoading = { [weak self] in
+            self?.showMainApp()
+        }
+
         addChildCoordinator(loadingCoordinator)
         
         window.rootViewController = navigationController
@@ -40,18 +43,14 @@ class AppCoordinator: BaseCoordinator {
         
         // Start main coordinator through DI Container
         let mainCoordinator = container.makeMainCoordinator(window: window)
+        mainCoordinator.onSignOut = { [weak self] in
+            self?.showLoadingScreen()
+        }
         addChildCoordinator(mainCoordinator)
         print("🔍 AppCoordinator created MainCoordinator: \(mainCoordinator)")
         
         // MainCoordinator จะจัดการ window เอง
         mainCoordinator.start()
         print("🔍 AppCoordinator called mainCoordinator.start() - MainCoordinator handles window internally")
-    }
-}
-
-// MARK: - LoadingCoordinatorDelegate
-extension AppCoordinator: LoadingCoordinatorDelegate {
-    func loadingDidComplete() {
-        showMainApp()
     }
 }
