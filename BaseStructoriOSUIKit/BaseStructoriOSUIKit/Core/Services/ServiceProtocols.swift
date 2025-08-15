@@ -11,8 +11,6 @@ import Foundation
 protocol UserServiceProtocol {
     func getCurrentUser() -> AppUser?
     func updatecurrentUser(user: AppUser)
-    func login(email: String, password: String) async throws -> AppUser
-    func logout() async throws
 }
 
 class UserService: UserServiceProtocol {
@@ -24,17 +22,6 @@ class UserService: UserServiceProtocol {
 
     func updatecurrentUser(user: AppUser) {
         currentUser = user
-    }
-
-    func login(email: String, password: String) async throws -> AppUser {
-        // TODO: Implement login
-        let user = AppUser(id: "1", name: "Test User", email: email)
-        currentUser = user
-        return user
-    }
-
-    func logout() async throws {
-        currentUser = nil
     }
 }
 
