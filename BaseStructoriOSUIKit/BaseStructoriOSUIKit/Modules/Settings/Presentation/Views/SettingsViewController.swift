@@ -54,10 +54,6 @@ class SettingsViewController: UIViewController, NavigationConfigurable {
         ])
     ]
     
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
-    }
-    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
             .title("ตั้งค่า")

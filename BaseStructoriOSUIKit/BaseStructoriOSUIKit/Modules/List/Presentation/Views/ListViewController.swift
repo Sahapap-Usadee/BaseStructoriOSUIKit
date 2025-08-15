@@ -58,7 +58,19 @@ class ListViewController: UIViewController, NavigationConfigurable {
         button.addTarget(self, action: #selector(showModalTapped), for: .touchUpInside)
         return button
     }()
-    
+
+    private lazy var showModalFullButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("แสดง Modal Full", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        button.backgroundColor = .systemBlue
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 12
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(showModalFullTapped), for: .touchUpInside)
+        return button
+    }()
+
     private lazy var showActionSheetButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("แสดง Action Sheet", for: .normal)
@@ -84,14 +96,10 @@ class ListViewController: UIViewController, NavigationConfigurable {
     }()
     
     // MARK: - Navigation Configuration
-    var navigationBarStyle: NavigationBarStyle {
-        return .colored(.systemBlue)
-    }
-    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
             .title("รายการ")
-            .style(.colored(.systemBlue))
+            .style(.gradient([.init(hex: "cc2b5e"), .init(hex: "753a88")]))
             .rightButton(image: UIImage(systemName: "info.circle")) { [weak self] in
                 self?.infoButtonTapped()
             }
@@ -116,6 +124,7 @@ class ListViewController: UIViewController, NavigationConfigurable {
         view.addSubview(titleLabel)
         view.addSubview(descriptionLabel)
         view.addSubview(showModalButton)
+        view.addSubview(showModalFullButton)
         view.addSubview(showActionSheetButton)
         view.addSubview(showAlertButton)
         
@@ -139,9 +148,15 @@ class ListViewController: UIViewController, NavigationConfigurable {
             showModalButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             showModalButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             showModalButton.heightAnchor.constraint(equalToConstant: 50),
-            
+
+            // Show Modal Full Button
+            showModalFullButton.topAnchor.constraint(equalTo: showModalButton.bottomAnchor, constant: 16),
+            showModalFullButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            showModalFullButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            showModalFullButton.heightAnchor.constraint(equalToConstant: 50),
+
             // Show Action Sheet Button
-            showActionSheetButton.topAnchor.constraint(equalTo: showModalButton.bottomAnchor, constant: 16),
+            showActionSheetButton.topAnchor.constraint(equalTo: showModalFullButton.bottomAnchor, constant: 16),
             showActionSheetButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             showActionSheetButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             showActionSheetButton.heightAnchor.constraint(equalToConstant: 50),
@@ -158,7 +173,11 @@ class ListViewController: UIViewController, NavigationConfigurable {
     @objc private func showModalTapped() {
         coordinator?.showModal()
     }
-    
+
+    @objc private func showModalFullTapped() {
+        coordinator?.showModalFull()
+    }
+
     @objc private func showActionSheetTapped() {
         let actionSheet = UIAlertController(title: "เลือกตัวเลือก", message: "เลือกสิ่งที่คุณต้องการทำ", preferredStyle: .actionSheet)
         

@@ -82,15 +82,11 @@ class HomeViewController: UIViewController, NavigationConfigurable {
         "Custom Transition"
     ]
     
-    // MARK: - Navigation Configuration
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
-    }
-    
+    // MARK: - Navigation Configuration    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
             .title("หน้าแรก")
-            .style(.default)
+            .style(.colored(.systemBlue))
             .rightButton(image: UIImage(systemName: "plus")) { [weak self] in
                 self?.rightButtonTapped()
             }
@@ -101,7 +97,6 @@ class HomeViewController: UIViewController, NavigationConfigurable {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        configureNavigationBar()
         
         print("🔍 HomeViewController viewDidLoad")
         print("🔍 navigationController: \(navigationController)")
@@ -111,6 +106,7 @@ class HomeViewController: UIViewController, NavigationConfigurable {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        configureNavigationBar()
         viewModel.userService.updatecurrentUser(user: .init(id: "1", name: "ter change", email: ""))
     }
     

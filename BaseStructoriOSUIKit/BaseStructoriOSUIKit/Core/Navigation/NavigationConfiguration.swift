@@ -10,7 +10,6 @@ import UIKit
 // MARK: - Navigation Configurable Protocol
 protocol NavigationConfigurable: AnyObject {
     func configureNavigationBar()
-    var navigationBarStyle: NavigationBarStyle { get }
     var navigationConfiguration: NavigationConfiguration { get }
 }
 
@@ -83,10 +82,6 @@ class NavigationConfigurationHelper {
 
 // MARK: - Default Implementation
 extension NavigationConfigurable where Self: UIViewController {
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
-    }
-    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationConfiguration()
     }

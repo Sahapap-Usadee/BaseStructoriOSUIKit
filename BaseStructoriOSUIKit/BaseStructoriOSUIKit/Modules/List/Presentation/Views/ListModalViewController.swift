@@ -44,17 +44,9 @@ class ListModalViewController: UIViewController, NavigationConfigurable {
         return button
     }()
     
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
-    }
-    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
-            .title("Modal Example")
-            .style(.default)
-            .leftButton(image: UIImage(systemName: "xmark")) { [weak self] in
-                self?.dismissButtonTapped()
-            }
+            .style(.hidden)
             .build()
     }
     
