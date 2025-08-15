@@ -22,7 +22,7 @@ class HomeCoordinator: BaseCoordinator {
         print("🔍 HomeCoordinator deinit: \(self)")
     }
     
-    func showDetail() {
+    func showDetail(hidesBottomBar: Bool = true) {
         print("🔍 HomeCoordinator showDetail called")
         print("🔍 NavigationController: \(navigationController)")
         print("🔍 NavigationController viewControllers count: \(navigationController.viewControllers.count)")
@@ -32,8 +32,8 @@ class HomeCoordinator: BaseCoordinator {
         detailViewController.coordinator = self
         
         // Hide TabBar when pushing (full screen)
-        detailViewController.hidesBottomBarWhenPushed = true
-        
+        detailViewController.hidesBottomBarWhenPushed = hidesBottomBar
+
         navigationController.pushViewController(detailViewController, animated: true)
         
         print("🔍 After push - viewControllers count: \(navigationController.viewControllers.count)")
