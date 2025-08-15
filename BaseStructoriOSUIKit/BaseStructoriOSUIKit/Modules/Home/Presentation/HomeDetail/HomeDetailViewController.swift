@@ -100,3 +100,7 @@ class HomeDetailViewController: UIViewController, NavigationConfigurable {
         present(activityController, animated: true)
     }
 }
+
+#Preview {
+    HomeDetailViewController()
+}

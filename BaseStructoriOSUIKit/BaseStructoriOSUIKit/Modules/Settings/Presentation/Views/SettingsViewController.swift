@@ -322,3 +322,7 @@ class SettingsCell: UITableViewCell {
         titleLabel.text = item.title
     }
 }
+
+#Preview {
+    SettingsViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
+}

@@ -84,3 +84,7 @@ class ListModalViewController: UIViewController, NavigationConfigurable {
          coordinator?.dismissViewController()
     }
 }
+
+#Preview {
+    ListModalViewController()
+}

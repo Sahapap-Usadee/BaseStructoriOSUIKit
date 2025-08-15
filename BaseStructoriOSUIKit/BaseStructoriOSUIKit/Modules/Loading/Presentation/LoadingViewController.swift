@@ -173,3 +173,7 @@ class LoadingViewController: UIViewController, NavigationConfigurable {
             .store(in: &cancellables)
     }
 }
+
+#Preview {
+    LoadingViewController()
+}

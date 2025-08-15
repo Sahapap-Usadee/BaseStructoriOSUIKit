@@ -227,3 +227,7 @@ class ListViewController: UIViewController, NavigationConfigurable {
         present(alert, animated: true)
     }
 }
+
+#Preview {
+    ListViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
+}

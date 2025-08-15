@@ -203,3 +203,8 @@ extension HomeViewController: UITableViewDelegate {
         present(alert, animated: true)
     }
 }
+
+
+#Preview {
+    HomeViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
+}
