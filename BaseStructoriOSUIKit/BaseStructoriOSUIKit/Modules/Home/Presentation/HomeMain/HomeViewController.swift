@@ -8,27 +8,17 @@
 import UIKit
 import Combine
 
-class HomeViewController: UIViewController, NavigationConfigurable {
-    
+class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigurable {
+
     // MARK: - Properties
     weak var coordinator: HomeCoordinator? {
         didSet {
             print("🔍 HomeViewController coordinator set to: \(coordinator)")
         }
     }
-    private let viewModel: HomeViewModel
+
     private var cancellables = Set<AnyCancellable>()
-    
-    // MARK: - Initialization
-    init(viewModel: HomeViewModel) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
+
     // MARK: - UI Components
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -207,4 +197,17 @@ extension HomeViewController: UITableViewDelegate {
 
 #Preview {
     HomeViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
+}
+
+class BaseViewController<T>: UIViewController {
+    public var viewModel: T
+
+    public init(viewModel: T, bundle: Bundle? = nil) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: bundle)
+    }
+
+    required public init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
