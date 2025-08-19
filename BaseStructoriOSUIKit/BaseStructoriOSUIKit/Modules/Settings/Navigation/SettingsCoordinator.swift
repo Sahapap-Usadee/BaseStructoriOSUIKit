@@ -6,10 +6,8 @@
 //
 
 import UIKit
-import Combine
 
 class SettingsCoordinator: BaseCoordinator {
-    private var cancellables = Set<AnyCancellable>()
     private let container: SettingsDIContainer
     var onSignOut: (() -> Void)?
 

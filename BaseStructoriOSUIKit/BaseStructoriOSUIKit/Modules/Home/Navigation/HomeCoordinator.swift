@@ -6,10 +6,8 @@
 //
 
 import UIKit
-import Combine
 
 class HomeCoordinator: BaseCoordinator {
-    private var cancellables = Set<AnyCancellable>()
     private let container: HomeDIContainer
     
     init(navigationController: UINavigationController, container: HomeDIContainer) {
