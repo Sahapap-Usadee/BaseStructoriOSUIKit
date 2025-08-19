@@ -38,7 +38,7 @@ class AppCoordinator: BaseCoordinator {
         
         loadingCoordinator.start()
     }
-    
+
     private func showMainApp() {
         print("🔍 AppCoordinator showMainApp() called")
         // Clear loading coordinator

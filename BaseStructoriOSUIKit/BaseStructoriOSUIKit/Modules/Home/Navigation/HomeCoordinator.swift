@@ -9,7 +9,7 @@ import UIKit
 
 class HomeCoordinator: BaseCoordinator {
     private let container: HomeDIContainer
-    
+
     init(navigationController: UINavigationController, container: HomeDIContainer) {
         self.container = container
         super.init(navigationController: navigationController)
@@ -28,11 +28,10 @@ class HomeCoordinator: BaseCoordinator {
         // สร้าง DetailViewController ผ่าน Module DI Container
         let detailViewController = container.makeHomeDetailViewController()
         detailViewController.coordinator = self
-        
         // Hide TabBar when pushing (full screen)
         detailViewController.hidesBottomBarWhenPushed = hidesBottomBar
 
-        navigationController.pushViewController(detailViewController, animated: true)
+        pushViewController(detailViewController, animated: true)
         
         print("🔍 After push - viewControllers count: \(navigationController.viewControllers.count)")
     }
