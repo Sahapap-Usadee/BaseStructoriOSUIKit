@@ -6,10 +6,8 @@
 //
 
 import UIKit
-import Combine
 
 class SettingsCoordinator: BaseCoordinator {
-    private var cancellables = Set<AnyCancellable>()
     private let container: SettingsDIContainer
     var onSignOut: (() -> Void)?
 
@@ -39,7 +37,7 @@ class SettingsCoordinator: BaseCoordinator {
     func showAboutScreen() {
         let aboutViewController = AboutViewController()
         let navController = UINavigationController(rootViewController: aboutViewController)
-        navigationController.present(navController, animated: true)
+        presentViewController(navController)
     }
     
     func showResetConfirmation() {
@@ -54,7 +52,7 @@ class SettingsCoordinator: BaseCoordinator {
         })
         
         alert.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))
-        navigationController.present(alert, animated: true)
+        presentViewController(alert)
     }
 
     func signOut() {

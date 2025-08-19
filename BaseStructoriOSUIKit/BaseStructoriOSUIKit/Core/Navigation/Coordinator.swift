@@ -138,20 +138,13 @@ extension BaseCoordinator {
         return navController
     }
     
-    /// ตรวจสอบว่าสามารถไปหน้าที่ต้องการได้หรือไม่
-    func canNavigate(to destination: String) -> Bool {
-        // ตัวอย่าง: ตรวจสอบ authorization, network, etc.
-        print("🧭 Checking navigation to: \(destination)")
-        return true
-    }
-    
     /// Log การนำทางสำหรับ debugging
     func logNavigation(from source: String, to destination: String, action: String = "navigate") {
         print("🚀 [\(type(of: self))] \(action.uppercased()): \(source) → \(destination)")
     }
     
     /// Log การจัดการ coordinator
-    private func logCoordinatorAction(_ action: String, _ coordinator: Coordinator, totalChildren: Int) {
+    func logCoordinatorAction(_ action: String, _ coordinator: Coordinator, totalChildren: Int) {
         let coordinatorName = String(describing: type(of: coordinator))
         print("👪 [\(type(of: self))] \(action): \(coordinatorName) (รวม \(totalChildren) ลูก)")
     }

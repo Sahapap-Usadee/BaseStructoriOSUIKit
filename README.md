@@ -11,7 +11,7 @@ This project follows **MVVM-C (Model-View-ViewModel-Coordinator)** pattern with 
 | ---------------------- | ---------------------------------- | ------------------------------------------- |
 | **UI Framework**       | UIKit (Programmatic)               | Native UI without Storyboards              |
 | **Architecture**       | MVVM-C + Combine                   | Coordinator pattern + reactive programming  |
-| **Networking**         | Alamofire + URLSession             | RESTful API with modern async/await        |
+| **Networking**         | Alamofire + URLSession             | RESTful API with async/await                |
 | **Dependency Injection** | Custom DI Container              | Loose coupling & testability               |
 | **Local Storage**      | Core Data + UserDefaults          | Persistent data & user preferences         |
 | **Image Loading**      | Kingfisher                         | Async image loading with caching           |
@@ -57,33 +57,48 @@ BaseStructoriOSUIKit/
 │
 ├── Modules/
 │   ├── Loading/
-│   │   ├── LoadingCoordinator.swift
-│   │   ├── LoadingViewController.swift
-│   │   └── LoadingViewModel.swift
+│   │   ├── DI/
+│   │   ├── Navigation/
+│   │   │   └── LoadingCoordinator.swift
+│   │   └── Presentation/
+│   │       ├── LoadingViewController.swift
+│   │       └── LoadingViewModel.swift
 │   │
 │   ├── Main/
 │   │   ├── MainCoordinator.swift
-│   │   ├── MainTabBarController.swift
-│   │   └── MainViewModel.swift
+│   │   └── MainTabBarController.swift
 │   │
-│   ├── TabOne/
-│   │   ├── TabOneCoordinator.swift
-│   │   ├── TabOneViewController.swift
-│   │   ├── TabOneViewModel.swift
-│   │   └── Views/
-│   │       └── TabOneCustomView.swift
+│   ├── Home/
+│   │   ├── DI/
+│   │   │   └── HomeDIContainer.swift
+│   │   ├── Navigation/
+│   │   │   └── HomeCoordinator.swift
+│   │   └── Presentation/
+│   │       ├── HomeMain/
+│   │       │   ├── HomeViewController.swift
+│   │       │   └── HomeViewModel.swift
+│   │       └── HomeDetail/
+│   │           └── HomeDetailViewController.swift
 │   │
-│   ├── TabTwo/
-│   │   ├── TabTwoCoordinator.swift
-│   │   ├── TabTwoViewController.swift
-│   │   ├── TabTwoViewModel.swift
-│   │   └── Views/
+│   ├── List/
+│   │   ├── DI/
+│   │   │   └── ListDIContainer.swift
+│   │   ├── Navigation/
+│   │   │   └── ListCoordinator.swift
+│   │   └── Presentation/
+│   │       ├── ViewModels/
+│   │       │   └── ListViewModel.swift
+│   │       └── Views/
 │   │
-│   └── TabThree/
-│       ├── TabThreeCoordinator.swift
-│       ├── TabThreeViewController.swift
-│       ├── TabThreeViewModel.swift
-│       └── Views/
+│   └── Settings/
+│       ├── DI/
+│       │   └── SettingsDIContainer.swift
+│       ├── Navigation/
+│       │   └── SettingsCoordinator.swift
+│       └── Presentation/
+│           ├── ViewModels/
+│           │   └── SettingsViewModel.swift
+│           └── Views/
 │
 ├── Models/
 │   ├── Domain/
@@ -109,9 +124,9 @@ BaseStructoriOSUIKit/
 
 1. **Loading Screen** → แสดงหน้าโหลด พร้อม animation
 2. **Main Tab Bar** → 3 tabs สำหรับทดสอบ navigation patterns:
-   - **Tab 1**: List View + Detail navigation
-   - **Tab 2**: Form & Modal presentations  
-   - **Tab 3**: Settings & Utility features
+    - **Home**: List View + Detail navigation
+    - **List**: Form & Modal presentations  
+    - **Settings**: Settings & Utility features
 
 ### 🔄 Key Features & Patterns
 
@@ -160,23 +175,24 @@ Tests/
 
 ### 🧭 Navigation Bar Management
 
+
 #### **Navigation Architecture**
 ```
 Core/Navigation/
-├── NavigationBarManager.swift       // Global navigation styling
-├── NavigationBarConfigurator.swift  // Per-screen configuration
-├── NavigationBarStyle.swift         // Style definitions
+├── NavigationManager.swift          // Global navigation styling & navigation controller factory
+├── NavigationConfiguration.swift    // Per-screen configuration protocol/struct
+├── Coordinator.swift                // Base coordinator class
 └── Extensions/
-    ├── UIViewController+Navigation.swift
-    └── UINavigationController+Styling.swift
+    ├── UIViewController+Extensions.swift
+    └── UIView+Extensions.swift
 ```
 
 #### **Navigation Bar Patterns**
 
 **1. Global Navigation Appearance**
 ```swift
-class NavigationBarManager {
-    static let shared = NavigationBarManager()
+class NavigationManager {
+    static let shared = NavigationManager()
     
     func setupGlobalAppearance() {
         let appearance = UINavigationBarAppearance()
@@ -186,118 +202,82 @@ class NavigationBarManager {
             .foregroundColor: UIColor.label,
             .font: UIFont.systemFont(ofSize: 18, weight: .semibold)
         ]
-        
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         UINavigationBar.appearance().compactAppearance = appearance
+    }
+    
+    func createNavigationController(rootViewController: UIViewController, style: NavigationBarStyle = .default) -> UINavigationController {
+        let nav = UINavigationController(rootViewController: rootViewController)
+        // Apply style if needed
+        return nav
     }
 }
 ```
 
 **2. Per-Screen Navigation Configuration**
 ```swift
-protocol NavigationConfigurable {
+protocol NavigationConfigurable: AnyObject {
     func configureNavigationBar()
-    var navigationBarStyle: NavigationBarStyle { get }
+    var navigationConfiguration: NavigationConfiguration { get }
 }
 
 enum NavigationBarStyle {
     case `default`
-    case transparent
     case colored(UIColor)
-    case gradient([UIColor])
+    case transparent
     case hidden
-    
-    case custom(NavigationBarConfiguration)
 }
 
-struct NavigationBarConfiguration {
-    let backgroundColor: UIColor?
-    let titleColor: UIColor?
-    let titleFont: UIFont?
-    let isTranslucent: Bool
-    let prefersLargeTitles: Bool
-    let hideBackButtonText: Bool
-    let customBackButton: UIImage?
+struct NavigationConfiguration {
+    let style: NavigationBarStyle
+    let title: String?
+    // Add more config as needed
 }
 ```
 
 **3. Screen-Specific Implementation**
 ```swift
-class TabOneViewController: UIViewController, NavigationConfigurable {
-    
-    var navigationBarStyle: NavigationBarStyle {
-        return .default
+class HomeViewController: UIViewController, NavigationConfigurable {
+    var navigationConfiguration: NavigationConfiguration {
+        NavigationConfiguration(style: .colored(.systemBlue), title: "Home")
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         configureNavigationBar()
     }
     
     func configureNavigationBar() {
-        title = "หน้าแรก"
-        
-        // Right bar button
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "plus"),
-            style: .plain,
-            target: self,
-            action: #selector(addButtonTapped)
-        )
-        
-        // Custom back button (if needed)
-        navigationItem.backButtonDisplayMode = .minimal
-    }
-    
-    @objc private func addButtonTapped() {
-        // Handle add action
+        // Set navigation bar style and title
+        title = navigationConfiguration.title
+        // ...apply style via NavigationManager if needed...
     }
 }
 
-// Special cases
-class TransparentNavViewController: UIViewController, NavigationConfigurable {
-    var navigationBarStyle: NavigationBarStyle {
-        return .transparent
+class HomeDetailViewController: UIViewController, NavigationConfigurable {
+    var navigationConfiguration: NavigationConfiguration {
+        NavigationConfiguration(style: .default, title: "Detail")
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        configureNavigationBar()
     }
     
     func configureNavigationBar() {
-        navigationController?.setNavigationBarHidden(false, animated: true)
-        
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        navigationController?.navigationBar.standardAppearance = appearance
-        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        title = navigationConfiguration.title
+        // ...apply style via NavigationManager if needed...
     }
 }
 ```
 
 **4. Coordinator Navigation Management**
 ```swift
-class TabOneCoordinator: Coordinator {
-    private let navigationController: UINavigationController
-    
-    func start() {
-        let viewController = TabOneViewController()
-        
-        // Apply navigation styling through coordinator
-        applyNavigationStyling(to: viewController)
-        navigationController.pushViewController(viewController, animated: true)
-    }
-    
-    private func applyNavigationStyling(to viewController: NavigationConfigurable) {
-        switch viewController.navigationBarStyle {
-        case .default:
-            setDefaultNavigationStyle()
-        case .transparent:
-            setTransparentNavigationStyle()
-        case .colored(let color):
-            setColoredNavigationStyle(color)
-        case .hidden:
-            navigationController.setNavigationBarHidden(true, animated: true)
-        case .custom(let config):
-            setCustomNavigationStyle(config)
-        }
+class HomeCoordinator: BaseCoordinator {
+    override func start() {
+        let homeVC = HomeViewController()
+        navigationController.pushViewController(homeVC, animated: false)
     }
 }
 ```
@@ -358,37 +338,31 @@ extension UIViewController {
 **3. Tab-Specific Navigation Styling**
 ```swift
 class MainTabBarController: UITabBarController {
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupTabSpecificNavigation()
+        setupTabs()
     }
     
-    private func setupTabSpecificNavigation() {
-        // Tab 1: Default style
-        let tab1Nav = createNavigationController(
-            rootViewController: TabOneViewController(),
-            title: "หน้าแรก",
-            image: UIImage(systemName: "house")
+    private func setupTabs() {
+        let homeNav = NavigationManager.shared.createNavigationController(
+            rootViewController: HomeViewController(),
+            style: .colored(.systemBlue)
         )
-        
-        // Tab 2: Custom colored navigation
-        let tab2Nav = createNavigationController(
-            rootViewController: TabTwoViewController(),
-            title: "รายการ",
-            image: UIImage(systemName: "list.bullet")
+        homeNav.tabBarItem = UITabBarItem(title: "Home", image: UIImage(systemName: "house"), selectedImage: UIImage(systemName: "house.fill"))
+
+        let listNav = NavigationManager.shared.createNavigationController(
+            rootViewController: ListViewController(),
+            style: .colored(.systemGreen)
         )
-        tab2Nav.navigationBar.tintColor = .systemBlue
-        
-        // Tab 3: Large title style
-        let tab3Nav = createNavigationController(
-            rootViewController: TabThreeViewController(),
-            title: "ตั้งค่า",
-            image: UIImage(systemName: "gearshape")
+        listNav.tabBarItem = UITabBarItem(title: "List", image: UIImage(systemName: "list.bullet"), selectedImage: UIImage(systemName: "list.bullet.rectangle.fill"))
+
+        let settingsNav = NavigationManager.shared.createNavigationController(
+            rootViewController: SettingsViewController(),
+            style: .default
         )
-        tab3Nav.navigationBar.prefersLargeTitles = true
-        
-        viewControllers = [tab1Nav, tab2Nav, tab3Nav]
+        settingsNav.tabBarItem = UITabBarItem(title: "Settings", image: UIImage(systemName: "gearshape"), selectedImage: UIImage(systemName: "gearshape.fill"))
+
+        viewControllers = [homeNav, listNav, settingsNav]
     }
 }
 ```

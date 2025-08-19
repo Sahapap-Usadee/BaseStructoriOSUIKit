@@ -6,10 +6,8 @@
 //
 
 import UIKit
-import Combine
 
 class ListCoordinator: BaseCoordinator {
-    private var cancellables = Set<AnyCancellable>()
     private let container: ListDIContainer
     
     init(navigationController: UINavigationController, container: ListDIContainer) {
@@ -23,8 +21,8 @@ class ListCoordinator: BaseCoordinator {
         
         let modalNavController = UINavigationController(rootViewController: modalViewController)
         modalNavController.modalPresentationStyle = .pageSheet
-        
-        navigationController.present(modalNavController, animated: true)
+
+        presentViewController(modalNavController)
     }
 
     func showModalFull() {
@@ -34,7 +32,7 @@ class ListCoordinator: BaseCoordinator {
         let modalNavController = UINavigationController(rootViewController: modalViewController)
         modalNavController.modalPresentationStyle = .fullScreen
 
-        navigationController.present(modalNavController, animated: true)
+        presentViewController(modalNavController)
     }
 
     func showActionSheet() {
@@ -49,13 +47,13 @@ class ListCoordinator: BaseCoordinator {
         })
         
         actionSheet.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))
-        
-        navigationController.present(actionSheet, animated: true)
+
+        presentViewController(actionSheet)
     }
     
     func showAlert() {
         let alert = UIAlertController(title: "แจ้งเตือน", message: "นี่คือการแจ้งเตือนจาก Coordinator", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "ตกลง", style: .default))
-        navigationController.present(alert, animated: true)
+        presentViewController(alert)
     }
 }
