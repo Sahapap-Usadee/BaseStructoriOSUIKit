@@ -28,6 +28,9 @@ class AppCoordinator: BaseCoordinator {
     private func showLoadingScreen() {
         let loadingCoordinator = LoadingCoordinator(navigationController: navigationController)
         loadingCoordinator.onFinishedLoading = { [weak self] in
+            // ปิด coordinator และลบออกจาก parent
+            self?.finish()
+
             self?.showMainApp()
         }
 
@@ -41,8 +44,6 @@ class AppCoordinator: BaseCoordinator {
 
     private func showMainApp() {
         print("🔍 AppCoordinator showMainApp() called")
-        // Clear loading coordinator
-        childCoordinators.removeAll()
         
         // Start main coordinator through DI Container
         let mainCoordinator = container.makeMainCoordinator(window: window)
