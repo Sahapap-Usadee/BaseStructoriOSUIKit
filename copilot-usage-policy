@@ -1,0 +1,6 @@
+## GitHub Copilot Usage Policy
+
+1. ห้ามใช้ Copilot กับไฟล์ที่มีข้อมูลลับ
+2. ต้องใช้ Content Exclusion Policy เพื่อยกเว้นไฟล์ที่ไม่ควรให้ Copilot ประมวลผล
+3. ต้องเปิดฟีเจอร์ “Block suggestions matching public code”
+4. ทุกโค้ดที่ Copilot สร้างต้องผ่าน human review ก่อน merge
