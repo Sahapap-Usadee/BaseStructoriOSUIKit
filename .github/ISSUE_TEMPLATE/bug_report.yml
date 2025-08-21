@@ -1,0 +1,13 @@
+# .github/ISSUE_TEMPLATE/bug_report.yml
+name: บั๊กรีพอร์ต
+description: แจ้งบั๊กที่พบในแอป
+labels: [bug]
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: ขั้นตอนที่ทำให้เกิดบั๊ก
+  - type: textarea
+    id: expected
+    attributes:
+      label: ผลลัพธ์ที่คาดหวัง
