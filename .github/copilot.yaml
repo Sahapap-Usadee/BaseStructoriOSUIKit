@@ -1,5 +1,0 @@
-exclusions:
-  - "**/Config/**"
-  - "**/Models/Entity/**"
-  - "**/BusinessRules.swift"
-  - "**/LegacyCode/**"
