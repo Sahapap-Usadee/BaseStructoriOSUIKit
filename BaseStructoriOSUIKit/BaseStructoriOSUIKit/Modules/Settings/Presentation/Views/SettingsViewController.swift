@@ -51,6 +51,11 @@ class SettingsViewController: UIViewController, NavigationConfigurable {
             SettingsItem(title: "ช่วยเหลือ", icon: "questionmark.circle", action: .help),
             SettingsItem(title: "ติดต่อเรา", icon: "envelope", action: .contact),
             SettingsItem(title: "ออกจากระบบ", icon: "rectangle.portrait.and.arrow.right", action: .logout)
+        ]),
+        SettingsSection(title: "การสนับสนุน", items: [
+            SettingsItem(title: "ช่วยเหลือ", icon: "questionmark.circle", action: .help),
+            SettingsItem(title: "ติดต่อเรา", icon: "envelope", action: .contact),
+            SettingsItem(title: "ออกจากระบบ", icon: "rectangle.portrait.and.arrow.right", action: .logout)
         ])
     ]
     
