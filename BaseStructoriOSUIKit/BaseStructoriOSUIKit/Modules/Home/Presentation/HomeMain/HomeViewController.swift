@@ -22,7 +22,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     // MARK: - UI Components
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "หน้าแรก - Tab One"
+        label.text = "หน้าแรก"
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         label.textColor = .label
         label.textAlignment = .center
@@ -136,7 +136,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
             listTableView.topAnchor.constraint(equalTo: showDetailButton.bottomAnchor, constant: 20),
             listTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             listTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            listTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+            listTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
     
