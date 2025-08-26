@@ -22,7 +22,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     // MARK: - UI Components
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = String(localized: "home_tab_one")
+        label.text = "หน้าแรก"
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         label.textColor = .label
         label.textAlignment = .center
