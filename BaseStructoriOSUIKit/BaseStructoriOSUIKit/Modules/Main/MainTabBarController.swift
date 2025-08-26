@@ -25,17 +25,17 @@ class MainTabBarController: UITabBarController {
     
     private func setupTabBar() {
         print("🔍 setupTabBar called")
-        tabBar.backgroundColor = .systemBackground
+       // tabBar.backgroundColor = .systemBackground
         tabBar.tintColor = .systemBlue
         tabBar.unselectedItemTintColor = .systemGray
         
         // Modern tab bar appearance
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .systemBackground
-        
-        tabBar.standardAppearance = appearance
-        tabBar.scrollEdgeAppearance = appearance
+//        let appearance = UITabBarAppearance()
+//        appearance.configureWithOpaqueBackground()
+//        appearance.backgroundColor = .systemBackground
+//        
+//        tabBar.standardAppearance = appearance
+//        tabBar.scrollEdgeAppearance = appearance
     }
 }
 
