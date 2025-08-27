@@ -7,6 +7,38 @@
 
 import UIKit
 
+// MARK: - String Localization Extension
+extension String {
+    /// Example: "hello_world".localized → "Hello, World!" / "สวัสดีชาวโลก!"
+    var localized: String {
+        return NSLocalizedString(self, comment: "")
+    }
+
+    /// Localization with comment
+    /// Example: "login_button".localized(comment: "Main login button text")
+    func localized(comment: String = "") -> String {
+        return NSLocalizedString(self, comment: comment)
+    }
+
+    /// Localization with string formatting
+    /// Example: "welcome_user".localized(with: "John") → "Welcome, John!" / "ยินดีต้อนรับ John!"
+    func localized(with arguments: CVarArg...) -> String {
+        return String(format: self.localized, arguments: arguments)
+    }
+
+    /// Localization with array of arguments
+    /// Example: "user_score".localized(with: ["John", 100]) → "John scored 100 points!"
+    func localized(with arguments: [CVarArg]) -> String {
+        return String(format: self.localized, arguments: arguments)
+    }
+
+    /// Pluralization support
+    /// Example: "item_count".localizedPlural(count: 5) → "5 items" / "5 รายการ"
+    func localizedPlural(count: Int) -> String {
+        return String.localizedStringWithFormat(self.localized, count)
+    }
+}
+
 extension String {
     
     // MARK: - Validation
@@ -36,15 +68,6 @@ extension String {
             return self
         }
         return String(prefix(length)) + trailing
-    }
-    
-    // MARK: - Localization
-    var localized: String {
-        return NSLocalizedString(self, comment: "")
-    }
-    
-    func localized(with arguments: CVarArg...) -> String {
-        return String(format: localized, arguments: arguments)
     }
     
     // MARK: - Date Formatting

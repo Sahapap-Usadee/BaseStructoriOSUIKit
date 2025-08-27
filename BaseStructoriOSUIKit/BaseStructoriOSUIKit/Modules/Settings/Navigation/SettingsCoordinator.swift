@@ -33,7 +33,14 @@ class SettingsCoordinator: BaseCoordinator {
             }
         }
     }
-    
+
+    func showLocalizationTest() {
+        let localizationTestViewController = container.makeLocalizationTestViewController()
+        localizationTestViewController.coordinator = self
+
+        pushViewController(localizationTestViewController)
+    }
+
     func showAboutScreen() {
         let aboutViewController = AboutViewController()
         let navController = UINavigationController(rootViewController: aboutViewController)
