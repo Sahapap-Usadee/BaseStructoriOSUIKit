@@ -46,7 +46,8 @@ class LocalizationTestViewController: UIViewController, NavigationConfigurable {
         let section = createSection()
 
         let basicTitleLabel = createTitleLabel()
-        basicTitleLabel.text = "test_basic_title".localized
+        let currentLang = Locale.current.language.languageCode?.identifier ?? ""
+        basicTitleLabel.text = "current_language_format".localized(with: currentLang)
 
         let basicSubtitleLabel = createSubtitleLabel()
         basicSubtitleLabel.text = "test_basic_subtitle".localized
@@ -289,7 +290,7 @@ class LocalizationTestViewController: UIViewController, NavigationConfigurable {
         joinDate: Date()
     )
 
-    private let testPrice: Double = 1299.99
+    private let testPrice: Double = 1299.546
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
