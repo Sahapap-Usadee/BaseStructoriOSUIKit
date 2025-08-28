@@ -184,6 +184,23 @@
         }
       }
     },
+    "localization_test" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Localization Test"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ทดสอบการแปลภาษา"
+          }
+        }
+      }
+    },
     "message_count_plural" : {
       "extractionState" : "manual",
       "localizations" : {

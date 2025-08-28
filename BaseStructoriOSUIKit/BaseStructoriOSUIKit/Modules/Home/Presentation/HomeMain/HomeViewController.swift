@@ -11,11 +11,7 @@ import Combine
 class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigurable {
 
     // MARK: - Properties
-    weak var coordinator: HomeCoordinator? {
-        didSet {
-            print("🔍 HomeViewController coordinator set to: \(coordinator)")
-        }
-    }
+    weak var coordinator: HomeCoordinator?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -84,11 +80,6 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        
-        print("🔍 HomeViewController viewDidLoad")
-        print("🔍 navigationController: \(navigationController)")
-        print("🔍 navigationController?.viewControllers: \(navigationController?.viewControllers)")
-        print("🔍 coordinator in viewDidLoad: \(coordinator)")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -99,7 +90,6 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        print("🔍 HomeViewController viewDidAppear - coordinator: \(coordinator)")
     }
     
     // MARK: - Setup
@@ -142,11 +132,6 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     
     // MARK: - Actions
     @objc private func showDetailTapped() {
-        print("🔍 HomeViewController showDetailTapped called")
-        print("🔍 Self: \(self)")
-        print("🔍 Coordinator reference: \(coordinator)")
-        print("🔍 Coordinator address: \(coordinator.map { "\($0)" } ?? "nil")")
-        
         if let coordinator = coordinator {
             print("🔍 Calling coordinator.showDetail()")
             coordinator.showDetail()

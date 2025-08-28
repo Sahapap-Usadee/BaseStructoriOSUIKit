@@ -73,7 +73,6 @@ class SettingsViewController: UIViewController, NavigationConfigurable {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("after ter test \(viewModel.userService.getCurrentUser()?.name)")
     }
 
     private func setupUI() {
