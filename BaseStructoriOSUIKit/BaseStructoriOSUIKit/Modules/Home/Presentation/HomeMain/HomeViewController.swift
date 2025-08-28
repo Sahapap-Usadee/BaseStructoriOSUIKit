@@ -18,7 +18,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     // MARK: - UI Components
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "หน้าแรก"
+        label.text = String(localized: .homePage)
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         label.textColor = .label
         label.textAlignment = .center
@@ -28,7 +28,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = "นี่คือตัวอย่างหน้าจอแรกที่ใช้ Coordinator pattern\nและ MVVM architecture"
+        label.text = String(localized: .homePageDesc)
         label.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
@@ -39,7 +39,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     
     private lazy var showDetailButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("แสดงหน้ารายละเอียด", for: .normal)
+        button.setTitle(String(localized: .showDetail), for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
@@ -71,7 +71,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     // MARK: - Navigation Configuration    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
-            .title("หน้าแรก")
+            .title(String(localized: .homePage))
             .style(.colored(.systemBlue))
             .build()
     }
@@ -169,7 +169,7 @@ extension HomeViewController: UITableViewDelegate {
             coordinator?.showDetail(hidesBottomBar: false)
         } else {
             let alert = UIAlertController(
-                title: "เลือก: \(sampleItems[indexPath.row])",
+                title: String(localized: .alertTitleSelect(name: sampleItems[indexPath.row])),
                 message: "คุณเลือกรายการที่ \(indexPath.row + 1)",
                 preferredStyle: .alert
             )

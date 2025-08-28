@@ -293,6 +293,7 @@
 				DEVELOPMENT_TEAM = 3CYHLKB59L;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BaseStructoriOSUIKit/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "privacy camera";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = "";
@@ -321,6 +322,7 @@
 				DEVELOPMENT_TEAM = 3CYHLKB59L;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BaseStructoriOSUIKit/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "privacy camera";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = "";
