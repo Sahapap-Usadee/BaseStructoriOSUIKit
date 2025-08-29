@@ -10,6 +10,12 @@
             "state" : "new",
             "value" : "BaseStructoriOSUIKit"
           }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "BaseStructoriOSUIKit"
+          }
         }
       }
     },
@@ -20,6 +26,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "privacy camera"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "privacy camera"
           }
         }
