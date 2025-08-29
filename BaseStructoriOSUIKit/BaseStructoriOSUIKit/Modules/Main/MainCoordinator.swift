@@ -66,7 +66,6 @@ class MainCoordinator: BaseCoordinator {
         print("🔍 Added to childCoordinators: \(childCoordinators.count) coordinators")
         
         homeViewController.coordinator = homeCoordinator
-        print("🔍 Set coordinator to HomeViewController: \(homeViewController.coordinator)")
         
         return navigationController
     }
