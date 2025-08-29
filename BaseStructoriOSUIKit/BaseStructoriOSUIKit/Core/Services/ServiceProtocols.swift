@@ -59,7 +59,7 @@ class NetworkService: NetworkServiceProtocol {
     
     func upload(data: Data, to endpoint: String) async throws -> Bool {
         // TODO: Implement upload
-        await Task.sleep(1_000_000_000) // Simulate network delay
+        try await Task.sleep(nanoseconds: 1_000_000_000) // Simulate network delay
         return true
     }
     

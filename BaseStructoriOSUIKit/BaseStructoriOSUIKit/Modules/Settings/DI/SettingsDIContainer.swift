@@ -11,6 +11,7 @@ import UIKit
 protocol SettingsFactoryProtocol {
     func makeSettingsViewModel() -> SettingsViewModel
     func makeSettingsViewController() -> SettingsViewController
+    func makeLocalizationTestViewController() -> LocalizationTestViewController
 }
 
 // MARK: - Settings DI Container
@@ -29,7 +30,7 @@ class SettingsDIContainer {
 
 // MARK: - Settings DI Container + Factory
 extension SettingsDIContainer: SettingsFactoryProtocol {
-    
+
     func makeSettingsViewModel() -> SettingsViewModel {
         let userService = appDIContainer.makeUserService()
         print("⚙️ SettingsDIContainer - UserService: \(userService)")
@@ -39,5 +40,9 @@ extension SettingsDIContainer: SettingsFactoryProtocol {
     func makeSettingsViewController() -> SettingsViewController {
         let viewModel = makeSettingsViewModel()
         return SettingsViewController(viewModel: viewModel)
+    }
+
+    func makeLocalizationTestViewController() -> LocalizationTestViewController {
+        return LocalizationTestViewController()
     }
 }
