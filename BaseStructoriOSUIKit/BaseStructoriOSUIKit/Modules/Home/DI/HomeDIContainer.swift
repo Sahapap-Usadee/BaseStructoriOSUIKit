@@ -15,6 +15,10 @@ protocol HomeFactoryProtocol {
     func makeHomeDetailViewController(pokemonId: Int) -> HomeDetailViewController
 }
 
+protocol HomeCoordinatorFactory {
+    func makeHomeFlowCoordinator(navigationController: UINavigationController) -> HomeCoordinator
+}
+
 // MARK: - Home DI Container
 class HomeDIContainer {
 
@@ -25,23 +29,13 @@ class HomeDIContainer {
     }
     
     // MARK: - Pokemon Data Layer 
-    private lazy var pokemonRemoteDataSource: PokemonRemoteDataSourceProtocol = {
-        return PokemonRemoteDataSource(networkService: appDIContainer.makeNetworkService())
-    }()
-    
-    private lazy var pokemonRepository: PokemonRepositoryProtocol = {
-        return PokemonRepositoryImpl(remoteDataSource: pokemonRemoteDataSource)
-    }()
-    
-    // MARK: - Pokemon Use Cases (ย้ายมาจาก DIContainer)
-    private lazy var getPokemonListUseCase: GetPokemonListUseCaseProtocol = {
-        return GetPokemonListUseCase(repository: pokemonRepository)
-    }()
-    
-    private lazy var getPokemonDetailUseCase: GetPokemonDetailUseCaseProtocol = {
-        return GetPokemonDetailUseCase(repository: pokemonRepository)
-    }()
-    
+    private lazy var pokemonRemoteDataSource: PokemonRemoteDataSourceProtocol = PokemonRemoteDataSource(networkService: appDIContainer.makeNetworkService())
+    private lazy var pokemonRepository: PokemonRepositoryProtocol = PokemonRepositoryImpl(remoteDataSource: pokemonRemoteDataSource)
+    private lazy var getPokemonListUseCase: GetPokemonListUseCaseProtocol = GetPokemonListUseCase(repository: pokemonRepository)
+    private lazy var getPokemonDetailUseCase: GetPokemonDetailUseCaseProtocol = GetPokemonDetailUseCase(repository: pokemonRepository)
+}
+
+extension HomeDIContainer: HomeCoordinatorFactory {
     func makeHomeFlowCoordinator(navigationController: UINavigationController) -> HomeCoordinator {
         return HomeCoordinator(navigationController: navigationController, container: self)
     }
