@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import Kingfisher
 
 class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigurable {
 
@@ -18,7 +19,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     // MARK: - UI Components
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = String(localized: .homePage)
+        label.text = "Pokemon List"
         label.font = UIFont.systemFont(ofSize: 24, weight: .bold)
         label.textColor = .label
         label.textAlignment = .center
@@ -28,7 +29,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.text = String(localized: .homePageDesc)
+        label.text = "ยินดีต้อนรับสู่ Pokemon App ที่ใช้ Clean Architecture"
         label.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
@@ -39,7 +40,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     
     private lazy var showDetailButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle(String(localized: .showDetail), for: .normal)
+        button.setTitle("Random Pokemon", for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
@@ -54,24 +55,15 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
         tableView.backgroundColor = .systemGroupedBackground
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+        tableView.register(PokemonCell.self, forCellReuseIdentifier: "PokemonCell")
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
     
-    // MARK: - Sample Data
-    private let sampleItems = [
-        "Navigation Example 1",
-        "Navigation Example 2", 
-        "Navigation Example 3",
-        "Modal Presentation",
-        "Custom Transition"
-    ]
-    
     // MARK: - Navigation Configuration    
     var navigationConfiguration: NavigationConfiguration {
         return NavigationBuilder()
-            .title(String(localized: .homePage))
+            .title("Pokemon List")
             .style(.colored(.systemBlue))
             .build()
     }
@@ -80,12 +72,15 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        bindViewModel()
+        
+        // Load initial data
+        viewModel.loadInitialData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         configureNavigationBar()
-        viewModel.userService.updatecurrentUser(user: .init(id: "1", name: "ter change", email: ""))
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -102,6 +97,48 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
         view.addSubview(listTableView)
         
         setupConstraints()
+        setupTableView()
+    }
+    
+    private func setupTableView() {
+        listTableView.refreshControl = UIRefreshControl()
+        listTableView.refreshControl?.addTarget(self, action: #selector(refreshData), for: .valueChanged)
+    }
+    
+    private func bindViewModel() {
+        // Bind pokemon list
+        viewModel.$pokemonList
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.listTableView.reloadData()
+            }
+            .store(in: &cancellables)
+        
+        // Bind loading state
+        viewModel.$isLoading
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isLoading in
+                if !isLoading {
+                    self?.listTableView.refreshControl?.endRefreshing()
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Bind error state
+        viewModel.$showError
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] showError in
+                if showError, let errorMessage = self?.viewModel.errorMessage {
+                    self?.showErrorAlert(message: errorMessage)
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func showErrorAlert(message: String) {
+        let alert = UIAlertController(title: "เกิดข้อผิดพลาด", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "ตกลง", style: .default))
+        present(alert, animated: true)
     }
     
     private func setupConstraints() {
@@ -132,12 +169,13 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     
     // MARK: - Actions
     @objc private func showDetailTapped() {
-        if let coordinator = coordinator {
-            print("🔍 Calling coordinator.showDetail()")
-            coordinator.showDetail()
-        } else {
-            print("❌ Coordinator is nil!")
-        }
+        // Navigate to a random pokemon detail
+        let randomId = Int.random(in: 1...150)
+        coordinator?.showDetail(pokemonId: randomId)
+    }
+    
+    @objc private func refreshData() {
+        viewModel.refreshData()
     }
     
     private func rightButtonTapped() {
@@ -150,13 +188,22 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
 // MARK: - UITableViewDataSource
 extension HomeViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return sampleItems.count
+        return viewModel.pokemonList.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        cell.textLabel?.text = sampleItems[indexPath.row]
-        cell.accessoryType = .disclosureIndicator
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "PokemonCell", for: indexPath) as? PokemonCell else {
+            return UITableViewCell()
+        }
+        
+        let pokemon = viewModel.pokemonList[indexPath.row]
+        cell.configure(with: pokemon)
+        
+        // Load more data when near the end
+        if indexPath.row == viewModel.pokemonList.count - 3 {
+            viewModel.loadMoreData()
+        }
+        
         return cell
     }
 }
@@ -165,25 +212,103 @@ extension HomeViewController: UITableViewDataSource {
 extension HomeViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        if indexPath.row == 0 {
-            coordinator?.showDetail(hidesBottomBar: false)
-        } else {
-            let alert = UIAlertController(
-                title: String(localized: .alertTitleSelect(name: sampleItems[indexPath.row])),
-                message: "คุณเลือกรายการที่ \(indexPath.row + 1)",
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: "ตกลง", style: .default))
-            present(alert, animated: true)
-            }
+        
+        let pokemon = viewModel.pokemonList[indexPath.row]
+        if let pokemonId = pokemon.id {
+            coordinator?.showDetail(pokemonId: pokemonId)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 80
     }
 }
 
-
-#Preview {
-    HomeViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
+// MARK: - Pokemon Cell
+class PokemonCell: UITableViewCell {
+    
+    private let pokemonImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.backgroundColor = .systemGray6
+        imageView.layer.cornerRadius = 8
+        imageView.clipsToBounds = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private let nameLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        label.textColor = .label
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let idLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        label.textColor = .secondaryLabel
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        // Cancel any ongoing image loading
+        pokemonImageView.kf.cancelDownloadTask()
+        pokemonImageView.image = nil
+    }
+    
+    private func setupUI() {
+        contentView.addSubview(pokemonImageView)
+        contentView.addSubview(nameLabel)
+        contentView.addSubview(idLabel)
+        
+        NSLayoutConstraint.activate([
+            pokemonImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            pokemonImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            pokemonImageView.widthAnchor.constraint(equalToConstant: 60),
+            pokemonImageView.heightAnchor.constraint(equalToConstant: 60),
+            
+            nameLabel.leadingAnchor.constraint(equalTo: pokemonImageView.trailingAnchor, constant: 16),
+            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            
+            idLabel.leadingAnchor.constraint(equalTo: pokemonImageView.trailingAnchor, constant: 16),
+            idLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 4),
+            idLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            idLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -16)
+        ])
+    }
+    
+    func configure(with pokemon: PokemonListItem) {
+        nameLabel.text = pokemon.name.capitalized
+        if let id = pokemon.id {
+            idLabel.text = "#\(String(format: "%03d", id))"
+        } else {
+            idLabel.text = ""
+        }
+        
+        // Load Pokemon image
+        loadPokemonImage(id: pokemon.id)
+    }
+    
+    private func loadPokemonImage(id: Int?) {
+        pokemonImageView.loadPokemonImage(by: id)
+    }
 }
 
+// MARK: - Base View Controller
 class BaseViewController<T>: UIViewController {
     public var viewModel: T
 

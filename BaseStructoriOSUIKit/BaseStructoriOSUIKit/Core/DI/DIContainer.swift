@@ -7,57 +7,77 @@
 
 import UIKit
 
-// MARK: - DI Container Protocol
-protocol DIContainer {
-    // Core Services เท่านั้น
-    func makeUserService() -> UserServiceProtocol
-    
-    // Module DI Containers
+protocol ServiceFactory {
+    func makeNetworkService() -> EnhancedNetworkServiceProtocol
+    func makeSessionManager() -> SessionManagerProtocol
+    func makeUserManager() -> UserManagerProtocol
+}
+
+protocol CoordinatorFactory {
+    func makeAppCoordinator(window: UIWindow) -> AppCoordinator
+}
+
+protocol ModuleContainerFactory {
     func makeHomeDIContainer() -> HomeDIContainer
     func makeListDIContainer() -> ListDIContainer
     func makeSettingsDIContainer() -> SettingsDIContainer
-    
-    // Main Coordinator
-    func makeMainCoordinator(window: UIWindow) -> MainCoordinator
+    func makeMainDIContainer() -> MainDIContainer
 }
 
-//MARK: - App DI Container
-class AppDIContainer: DIContainer {
-    
-    // Singleton instance
+//MARK: - App DI Container (Composition Root)
+class AppDIContainer {
     static let shared = AppDIContainer()
-    
-    // Services (lazy loading)
-    private lazy var userService: UserServiceProtocol = UserService()
-    
-    // Module DI Containers (lazy loading)
+
+    private init() {}
+
+    private lazy var sessionManager: SessionManagerProtocol = SessionManager()
+    private lazy var networkService: EnhancedNetworkServiceProtocol = EnhancedNetworkService(sessionManager: sessionManager)
+    private lazy var userManager: UserManagerProtocol = UserManager()
+
     private lazy var homeDIContainer: HomeDIContainer = HomeDIContainer(appDIContainer: self)
     private lazy var listDIContainer: ListDIContainer = ListDIContainer(appDIContainer: self)
     private lazy var settingsDIContainer: SettingsDIContainer = SettingsDIContainer(appDIContainer: self)
-    
-    private init() {}
-    
-    // MARK: - Services
-    func makeUserService() -> UserServiceProtocol {
-        print("🔍 AppDIContainer.makeUserService() called - UserService instance: \(userService)")
-        return userService
+    private lazy var mainDIContainer: MainDIContainer = MainDIContainer(appDIContainer: self)
+}
+
+extension AppDIContainer: ServiceFactory {
+
+    // MARK: Core Services
+    func makeNetworkService() -> EnhancedNetworkServiceProtocol {
+        return networkService
     }
-    
-    // MARK: - Module DI Containers
+
+    func makeSessionManager() -> SessionManagerProtocol {
+        return sessionManager
+    }
+
+    func makeUserManager() -> UserManagerProtocol {
+        return userManager
+    }
+}
+
+extension AppDIContainer: ModuleContainerFactory {
+
+    // MARK: Module Containers with Dependency Validation
     func makeHomeDIContainer() -> HomeDIContainer {
         return homeDIContainer
     }
-    
+
     func makeListDIContainer() -> ListDIContainer {
         return listDIContainer
     }
-    
+
     func makeSettingsDIContainer() -> SettingsDIContainer {
         return settingsDIContainer
     }
-    
-    // MARK: - Main Coordinator
-    func makeMainCoordinator(window: UIWindow) -> MainCoordinator {
-        return MainCoordinator(window: window, container: self)
+
+    func makeMainDIContainer() -> MainDIContainer {
+        return mainDIContainer
+    }
+}
+
+extension AppDIContainer: CoordinatorFactory {
+    func makeAppCoordinator(window: UIWindow) -> AppCoordinator {
+        return AppCoordinator(window: window, container: self)
     }
 }

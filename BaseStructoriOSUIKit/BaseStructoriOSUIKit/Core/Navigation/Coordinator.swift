@@ -148,6 +148,36 @@ extension BaseCoordinator {
         let coordinatorName = String(describing: type(of: coordinator))
         print("👪 [\(type(of: self))] \(action): \(coordinatorName) (รวม \(totalChildren) ลูก)")
     }
+    
+    /// หา top-most view controller ปัจจุบันในแอป
+    func getTopViewController() -> UIViewController? {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first else {
+            return nil
+        }
+        
+        var topViewController = window.rootViewController
+        
+        while let presentedViewController = topViewController?.presentedViewController {
+            topViewController = presentedViewController
+        }
+        
+        if let navigationController = topViewController as? UINavigationController {
+            topViewController = navigationController.topViewController
+        }
+        
+        if let tabBarController = topViewController as? UITabBarController {
+            if let selectedViewController = tabBarController.selectedViewController {
+                if let navigationController = selectedViewController as? UINavigationController {
+                    topViewController = navigationController.topViewController
+                } else {
+                    topViewController = selectedViewController
+                }
+            }
+        }
+        
+        return topViewController
+    }
 }
 
 // MARK: - 🔍 Debug และ Memory Management Tools

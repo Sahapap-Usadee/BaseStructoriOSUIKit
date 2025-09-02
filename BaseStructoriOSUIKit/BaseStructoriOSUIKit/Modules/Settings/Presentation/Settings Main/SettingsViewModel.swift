@@ -11,7 +11,7 @@ import Combine
 class SettingsViewModel: ObservableObject {
     
     // MARK: - Services
-    public let userService: UserServiceProtocol
+    public let userManager: UserManagerProtocol
 
     // MARK: - Published Properties
     @Published var title: String = "การตั้งค่า"
@@ -57,11 +57,9 @@ class SettingsViewModel: ObservableObject {
     let availableFontSizes = ["เล็ก", "ปกติ", "ใหญ่", "ใหญ่มาก"]
     
     // MARK: - Initialization
-    init(userService: UserServiceProtocol) {
-        self.userService = userService
+    init(userManager: UserManagerProtocol) {
+        self.userManager = userManager
         loadSettings()
-//        print("before ter test \(userService.getCurrentUser()?.name)")
-//        userService.updatecurrentUser(user: .init(id: "1", name: "ter change", email: ""))
     }
     
     // MARK: - Public Methods

@@ -323,5 +323,5 @@ class SettingsCell: UITableViewCell {
 }
 
 #Preview {
-    SettingsViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
+    SettingsViewController(viewModel: .init(userManager: AppDIContainer.shared.makeUserManager()))
 }

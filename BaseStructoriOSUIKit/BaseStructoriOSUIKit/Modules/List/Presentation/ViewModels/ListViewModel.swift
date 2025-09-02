@@ -11,7 +11,7 @@ import Combine
 class ListViewModel: ObservableObject {
 
     // MARK: - Services
-    public let userService: UserServiceProtocol
+    public let userManager: UserManagerProtocol
     // MARK: - Published Properties
     @Published var title: String = "รายการ"
     @Published var description: String = "จัดการรายการและแสดง Modal Presentations"
@@ -41,8 +41,8 @@ class ListViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
-    init(userService: UserServiceProtocol) {
-        self.userService = userService
+    init(userManager: UserManagerProtocol) {
+        self.userManager = userManager
         loadInitialData()
     }
     

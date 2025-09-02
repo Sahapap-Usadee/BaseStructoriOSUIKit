@@ -114,7 +114,6 @@ class ListViewController: UIViewController, NavigationConfigurable {
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        viewModel.userService.updatecurrentUser(user: .init(id: "2", name: "ter2 change", email: ""))
     }
 
     // MARK: - Setup
@@ -229,5 +228,5 @@ class ListViewController: UIViewController, NavigationConfigurable {
 }
 
 #Preview {
-    ListViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
+    ListViewController(viewModel: .init(userManager: AppDIContainer.shared.makeUserManager()))
 }
