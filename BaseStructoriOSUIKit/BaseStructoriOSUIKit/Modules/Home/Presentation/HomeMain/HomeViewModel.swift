@@ -38,7 +38,6 @@ class HomeViewModel: HomeViewModelOutput {
     @Published var showError: Bool = false
     @Published var hasMoreData: Bool = true
     
-    
     // MARK: - Pagination Properties
     private var currentOffset: Int = 0
     private let limit: Int = 20
@@ -115,12 +114,6 @@ extension HomeViewModel: HomeViewModelInput {
     private func handleError(_ error: Error) {
         DispatchQueue.main.async { [weak self] in
             self?.isLoading = false
-            
-            if error is SessionError {
-                // Session expired will be handled by SessionExpiredHandler automatically
-                return
-            }
-            
             self?.errorMessage = error.localizedDescription
             self?.showError = true
         }
