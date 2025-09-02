@@ -19,7 +19,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         if let window = window {
             let container = AppDIContainer.shared
-            appCoordinator = AppCoordinator(window: window, container: container)
+            appCoordinator = container.makeAppCoordinator(window: window)
             appCoordinator?.start()
         }
     }

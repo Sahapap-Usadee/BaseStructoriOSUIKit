@@ -7,14 +7,17 @@
 
 import UIKit
 
-// MARK: - DI Container Protocol
-protocol DIContainer {
-    // Core Services
+protocol ServiceFactory {
     func makeNetworkService() -> EnhancedNetworkServiceProtocol
     func makeSessionManager() -> SessionManagerProtocol
     func makeUserManager() -> UserManagerProtocol
+}
 
-    // Module DI Containers
+protocol CoordinatorFactory {
+    func makeAppCoordinator(window: UIWindow) -> AppCoordinator
+}
+
+protocol ModuleContainerFactory {
     func makeHomeDIContainer() -> HomeDIContainer
     func makeListDIContainer() -> ListDIContainer
     func makeSettingsDIContainer() -> SettingsDIContainer
@@ -27,14 +30,17 @@ class AppDIContainer {
 
     private init() {}
 
-    // Session & Network
     private lazy var sessionManager: SessionManagerProtocol = SessionManager()
     private lazy var networkService: EnhancedNetworkServiceProtocol = EnhancedNetworkService(sessionManager: sessionManager)
-
     private lazy var userManager: UserManagerProtocol = UserManager()
+
+    private lazy var homeDIContainer: HomeDIContainer = HomeDIContainer(appDIContainer: self)
+    private lazy var listDIContainer: ListDIContainer = ListDIContainer(appDIContainer: self)
+    private lazy var settingsDIContainer: SettingsDIContainer = SettingsDIContainer(appDIContainer: self)
+    private lazy var mainDIContainer: MainDIContainer = MainDIContainer(appDIContainer: self)
 }
 
-extension AppDIContainer: DIContainer {
+extension AppDIContainer: ServiceFactory {
 
     // MARK: Core Services
     func makeNetworkService() -> EnhancedNetworkServiceProtocol {
@@ -48,21 +54,30 @@ extension AppDIContainer: DIContainer {
     func makeUserManager() -> UserManagerProtocol {
         return userManager
     }
+}
 
-    // MARK: Module Containers
+extension AppDIContainer: ModuleContainerFactory {
+
+    // MARK: Module Containers with Dependency Validation
     func makeHomeDIContainer() -> HomeDIContainer {
-        return HomeDIContainer(appDIContainer: self)
+        return homeDIContainer
     }
 
     func makeListDIContainer() -> ListDIContainer {
-        return ListDIContainer(appDIContainer: self)
+        return listDIContainer
     }
 
     func makeSettingsDIContainer() -> SettingsDIContainer {
-        return SettingsDIContainer(appDIContainer: self)
+        return settingsDIContainer
     }
 
     func makeMainDIContainer() -> MainDIContainer {
-        return MainDIContainer(appDIContainer: self)
+        return mainDIContainer
+    }
+}
+
+extension AppDIContainer: CoordinatorFactory {
+    func makeAppCoordinator(window: UIWindow) -> AppCoordinator {
+        return AppCoordinator(window: window, container: self)
     }
 }

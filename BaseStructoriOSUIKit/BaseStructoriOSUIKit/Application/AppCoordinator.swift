@@ -9,18 +9,27 @@ import UIKit
 
 class AppCoordinator: BaseCoordinator {
     private let window: UIWindow
-    private let container: DIContainer
+    private let container: AppDIContainer
+
+    // MARK: - App State Management
+    private enum AppState {
+        case loading
+        case main
+        case sessionExpired
+    }
     
-    init(window: UIWindow, container: DIContainer) {
+    private var currentState: AppState = .loading
+    
+    init(window: UIWindow, container: AppDIContainer) {
         self.window = window
         self.container = container
         super.init(navigationController: UINavigationController())
-
         setupSessionExpiredHandling()
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+        print("🔍 AppCoordinator deinit")
     }
     
     override func start() {
@@ -28,16 +37,36 @@ class AppCoordinator: BaseCoordinator {
         NavigationManager.shared.setupGlobalAppearance()
         
         // Start with loading coordinator
-        showLoadingScreen()
+        transitionTo(.loading)
+    }
+    
+    // MARK: - State Management
+    private func transitionTo(_ newState: AppState) {
+        guard currentState != newState else { return }
+        
+        let previousState = currentState
+        currentState = newState
+        
+        print("🔄 AppCoordinator: \(previousState) → \(newState)")
+        
+        // Clean up previous state
+        finish()
+        
+        // Setup new state
+        switch newState {
+        case .loading:
+            showLoadingScreen()
+        case .main:
+            showMainApp()
+        case .sessionExpired:
+            showSessionExpiredFlow()
+        }
     }
     
     private func showLoadingScreen() {
         let loadingCoordinator = LoadingCoordinator(navigationController: navigationController)
         loadingCoordinator.onFinishedLoading = { [weak self] in
-            // ปิด coordinator และลบออกจาก parent
-            self?.finish()
-
-            self?.showMainApp()
+            self?.transitionTo(.main)
         }
 
         addChildCoordinator(loadingCoordinator)
@@ -51,18 +80,25 @@ class AppCoordinator: BaseCoordinator {
     private func showMainApp() {
         print("🔍 AppCoordinator showMainApp() called")
         
-        // Start main coordinator through DI Container
+        // Create main coordinator through factory
         let mainDIContainer = container.makeMainDIContainer()
         let mainCoordinator = mainDIContainer.makeMainFlowCoordinator(window: window)
         mainCoordinator.onSignOut = { [weak self] in
-            self?.showLoadingScreen()
+            self?.transitionTo(.loading)
         }
+        
         addChildCoordinator(mainCoordinator)
         print("🔍 AppCoordinator created MainCoordinator: \(mainCoordinator)")
         
         // MainCoordinator จะจัดการ window เอง
         mainCoordinator.start()
         print("🔍 AppCoordinator called mainCoordinator.start() - MainCoordinator handles window internally")
+    }
+    
+    private func showSessionExpiredFlow() {
+        showSessionExpiredAlert { [weak self] in
+            self?.transitionTo(.loading)
+        }
     }
     
     private func showSessionExpiredAlert(completion: @escaping () -> Void) {
@@ -96,12 +132,6 @@ extension AppCoordinator {
     }
 
     @objc private func handleSessionExpired() {
-        showSessionExpiredAlert { [weak self] in
-            // Clear all child coordinators
-            self?.childCoordinators.removeAll()
-
-            // Restart app flow
-            self?.showLoadingScreen()
-        }
+        transitionTo(.sessionExpired)
     }
 }
