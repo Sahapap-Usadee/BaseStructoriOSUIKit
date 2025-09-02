@@ -11,7 +11,8 @@ import UIKit
 protocol HomeFactoryProtocol {
     func makeHomeViewModel() -> HomeViewModel
     func makeHomeViewController() -> HomeViewController
-    func makeHomeDetailViewController() -> HomeDetailViewController
+    func makeHomeDetailViewModel(pokemonId: Int) -> HomeDetailViewModel
+    func makeHomeDetailViewController(pokemonId: Int) -> HomeDetailViewController
 }
 
 // MARK: - Home DI Container
@@ -33,8 +34,12 @@ extension HomeDIContainer: HomeFactoryProtocol {
     
     func makeHomeViewModel() -> HomeViewModel {
         let userService = appDIContainer.makeUserService()
+        let getPokemonListUseCase = appDIContainer.makeGetPokemonListUseCase()
         print("🏠 HomeDIContainer - UserService: \(userService)")
-        return HomeViewModel(userService: userService)
+        return HomeViewModel(
+            userService: userService,
+            getPokemonListUseCase: getPokemonListUseCase
+        )
     }
     
     func makeHomeViewController() -> HomeViewController {
@@ -42,7 +47,16 @@ extension HomeDIContainer: HomeFactoryProtocol {
         return HomeViewController(viewModel: viewModel)
     }
     
-    func makeHomeDetailViewController() -> HomeDetailViewController {
-        return HomeDetailViewController()
+    func makeHomeDetailViewModel(pokemonId: Int) -> HomeDetailViewModel {
+        let getPokemonDetailUseCase = appDIContainer.makeGetPokemonDetailUseCase()
+        return HomeDetailViewModel(
+            pokemonId: pokemonId,
+            getPokemonDetailUseCase: getPokemonDetailUseCase
+        )
+    }
+    
+    func makeHomeDetailViewController(pokemonId: Int) -> HomeDetailViewController {
+        let viewModel = makeHomeDetailViewModel(pokemonId: pokemonId)
+        return HomeDetailViewController(viewModel: viewModel)
     }
 }

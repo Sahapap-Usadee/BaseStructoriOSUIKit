@@ -17,11 +17,9 @@ protocol ImageServiceProtocol {
 
 // MARK: - Image Service Implementation
 class ImageService: ImageServiceProtocol {
-    private let networkService: NetworkServiceProtocol
     private let cache = NSCache<NSString, UIImage>()
     
-    init(networkService: NetworkServiceProtocol) {
-        self.networkService = networkService
+    init() {
         setupCache()
     }
     
@@ -37,9 +35,13 @@ class ImageService: ImageServiceProtocol {
         }
         
         // ดาวน์โหลดรูปใหม่
-        let imageData = try await networkService.downloadImage(from: url)
+        guard let imageURL = URL(string: url) else {
+            throw ImageError.invalidURL
+        }
         
-        guard let image = UIImage(data: imageData) else {
+        let (data, _) = try await URLSession.shared.data(from: imageURL)
+        
+        guard let image = UIImage(data: data) else {
             throw ImageError.invalidImageData
         }
         
@@ -64,11 +66,14 @@ class ImageService: ImageServiceProtocol {
 
 // MARK: - Image Errors
 enum ImageError: Error, LocalizedError {
+    case invalidURL
     case invalidImageData
     case downloadFailed
     
     var errorDescription: String? {
         switch self {
+        case .invalidURL:
+            return "URL รูปภาพไม่ถูกต้อง"
         case .invalidImageData:
             return "ข้อมูลรูปภาพไม่ถูกต้อง"
         case .downloadFailed:

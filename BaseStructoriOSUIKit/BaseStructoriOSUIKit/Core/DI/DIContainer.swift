@@ -7,10 +7,60 @@
 
 import UIKit
 
+// MARK: - Pokemon Data Sources Container
+protocol PokemonDataSourceContainer {
+    func makePokemonRemoteDataSource() -> PokemonRemoteDataSourceProtocol
+}
+
+class DefaultPokemonDataSourceContainer: PokemonDataSourceContainer {
+    private let networkService: EnhancedNetworkServiceProtocol
+    
+    init(networkService: EnhancedNetworkServiceProtocol) {
+        self.networkService = networkService
+    }
+    
+    func makePokemonRemoteDataSource() -> PokemonRemoteDataSourceProtocol {
+        return PokemonRemoteDataSource(networkService: networkService)
+    }
+}
+
+// MARK: - Pokemon Use Cases Container
+protocol PokemonUseCaseContainer {
+    func makeGetPokemonListUseCase() -> GetPokemonListUseCaseProtocol
+    func makeGetPokemonDetailUseCase() -> GetPokemonDetailUseCaseProtocol
+}
+
+class DefaultPokemonUseCaseContainer: PokemonUseCaseContainer {
+    private let repository: PokemonRepositoryProtocol
+    
+    init(repository: PokemonRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func makeGetPokemonListUseCase() -> GetPokemonListUseCaseProtocol {
+        return GetPokemonListUseCase(repository: repository)
+    }
+    
+    func makeGetPokemonDetailUseCase() -> GetPokemonDetailUseCaseProtocol {
+        return GetPokemonDetailUseCase(repository: repository)
+    }
+}
+
 // MARK: - DI Container Protocol
 protocol DIContainer {
-    // Core Services เท่านั้น
+        // Services
+    func makeNetworkService() -> EnhancedNetworkServiceProtocol
+    func makeImageService() -> ImageServiceProtocol
+    func makeSessionManager() -> SessionManagerProtocol
     func makeUserService() -> UserServiceProtocol
+    
+    // Data Layer
+    func makePokemonRemoteDataSource() -> PokemonRemoteDataSourceProtocol
+    func makePokemonRepository() -> PokemonRepositoryProtocol
+    
+    // Use Cases
+    func makeGetPokemonListUseCase() -> GetPokemonListUseCaseProtocol
+    func makeGetPokemonDetailUseCase() -> GetPokemonDetailUseCaseProtocol
     
     // Module DI Containers
     func makeHomeDIContainer() -> HomeDIContainer
@@ -27,37 +77,108 @@ class AppDIContainer: DIContainer {
     // Singleton instance
     static let shared = AppDIContainer()
     
-    // Services (lazy loading)
-    private lazy var userService: UserServiceProtocol = UserService()
-    
-    // Module DI Containers (lazy loading)
-    private lazy var homeDIContainer: HomeDIContainer = HomeDIContainer(appDIContainer: self)
-    private lazy var listDIContainer: ListDIContainer = ListDIContainer(appDIContainer: self)
-    private lazy var settingsDIContainer: SettingsDIContainer = SettingsDIContainer(appDIContainer: self)
-    
     private init() {}
     
-    // MARK: - Services
+    // MARK: - Lazy Service Instances
+    
+    // Core Services
+    private lazy var userService: UserServiceProtocol = {
+        return UserService()
+    }()
+    
+    private lazy var tokenDataSource: TokenLocalDataSource = {
+        return TokenDefaultsDataSource()
+    }()
+    
+    private lazy var tokenUseCase: TokenUseCaseProtocol = {
+        return TokenUseCase(dataSource: tokenDataSource)
+    }()
+    
+    private lazy var sessionManager: SessionManagerProtocol = {
+        return SessionManager(tokenUseCase: tokenUseCase)
+    }()
+    
+    private lazy var networkService: EnhancedNetworkServiceProtocol = {
+        return EnhancedNetworkService(sessionManager: sessionManager)
+    }()
+    
+    private lazy var imageService: ImageServiceProtocol = {
+        return ImageService()
+    }()
+    
+    // Pokemon Data Sources Container
+    private lazy var pokemonDataSourceContainer: PokemonDataSourceContainer = {
+        return DefaultPokemonDataSourceContainer(networkService: makeNetworkService())
+    }()
+    
+    // Pokemon Repository
+    private lazy var pokemonRepository: PokemonRepositoryProtocol = {
+        return PokemonRepositoryImpl(
+            remoteDataSource: pokemonDataSourceContainer.makePokemonRemoteDataSource()
+        )
+    }()
+    
+    // Pokemon Use Cases Container  
+    private lazy var pokemonUseCaseContainer: PokemonUseCaseContainer = {
+        return DefaultPokemonUseCaseContainer(repository: pokemonRepository)
+    }()
+    
+    // MARK: - Core Services Factory Methods
+    
     func makeUserService() -> UserServiceProtocol {
-        print("🔍 AppDIContainer.makeUserService() called - UserService instance: \(userService)")
         return userService
     }
     
-    // MARK: - Module DI Containers
+    func makeNetworkService() -> EnhancedNetworkServiceProtocol {
+        return networkService
+    }
+    
+    func makeImageService() -> ImageServiceProtocol {
+        return imageService
+    }
+    
+    func makeSessionManager() -> SessionManagerProtocol {
+        return sessionManager
+    }
+    
+    // MARK: - Data Layer Factory Methods
+    
+    func makePokemonRemoteDataSource() -> PokemonRemoteDataSourceProtocol {
+        return pokemonDataSourceContainer.makePokemonRemoteDataSource()
+    }
+    
+    func makePokemonRepository() -> PokemonRepositoryProtocol {
+        return pokemonRepository
+    }
+    
+    // MARK: - Use Cases Factory Methods
+    
+    func makeGetPokemonListUseCase() -> GetPokemonListUseCaseProtocol {
+        return pokemonUseCaseContainer.makeGetPokemonListUseCase()
+    }
+    
+    func makeGetPokemonDetailUseCase() -> GetPokemonDetailUseCaseProtocol {
+        return pokemonUseCaseContainer.makeGetPokemonDetailUseCase()
+    }
+    
+    // MARK: - Module DI Containers Factory Methods
+    
     func makeHomeDIContainer() -> HomeDIContainer {
-        return homeDIContainer
+        return HomeDIContainer(appDIContainer: self)
     }
     
     func makeListDIContainer() -> ListDIContainer {
-        return listDIContainer
+        return ListDIContainer(appDIContainer: self)
     }
     
     func makeSettingsDIContainer() -> SettingsDIContainer {
-        return settingsDIContainer
+        return SettingsDIContainer(appDIContainer: self)
     }
     
-    // MARK: - Main Coordinator
     func makeMainCoordinator(window: UIWindow) -> MainCoordinator {
-        return MainCoordinator(window: window, container: self)
+        return MainCoordinator(
+            window: window,
+            container: self
+        )
     }
 }

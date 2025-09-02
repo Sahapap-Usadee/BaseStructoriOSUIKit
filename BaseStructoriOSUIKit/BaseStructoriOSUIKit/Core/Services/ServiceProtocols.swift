@@ -7,22 +7,11 @@
 
 import Foundation
 
-// MARK: - User Service
-protocol UserServiceProtocol {
-    func getCurrentUser() -> AppUser?
-    func updatecurrentUser(user: AppUser)
-}
-
-class UserService: UserServiceProtocol {
-    private var currentUser: AppUser?
-
-    func getCurrentUser() -> AppUser? {
-        return currentUser
-    }
-
-    func updatecurrentUser(user: AppUser) {
-        currentUser = user
-    }
+// MARK: - Session Error
+enum SessionError: Error {
+    case tokenExpired
+    case unauthorized
+    case networkError
 }
 
 // MARK: - Network Service
