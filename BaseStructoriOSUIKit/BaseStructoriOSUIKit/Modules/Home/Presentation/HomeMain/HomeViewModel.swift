@@ -8,25 +8,41 @@
 import Foundation
 import Combine
 
-class HomeViewModel: ObservableObject {
+// MARK: - Home ViewModel Input Protocol
+protocol HomeViewModelInput {
+    func loadInitialData()
+    func refreshData()
+    func loadMoreData()
+}
+
+// MARK: - Home ViewModel Output Protocol
+protocol HomeViewModelOutput: ObservableObject {
+    var isLoading: Bool { get }
+    var pokemonList: [PokemonListItem] { get }
+    var errorMessage: String? { get }
+    var showError: Bool { get }
+    var hasMoreData: Bool { get }
+}
+
+// MARK: - Home ViewModel
+class HomeViewModel: HomeViewModelOutput {
     
     // MARK: - Services & Use Cases
     public let userService: UserServiceProtocol
     private let getPokemonListUseCase: GetPokemonListUseCaseProtocol
-
+    
     // MARK: - Published Properties
-    @Published var title: String = "Pokemon List"
-    @Published var description: String = "ยินดีต้อนรับสู่ Pokemon App ที่ใช้ Clean Architecture"
     @Published var isLoading: Bool = false
     @Published var pokemonList: [PokemonListItem] = []
     @Published var errorMessage: String?
     @Published var showError: Bool = false
+    @Published var hasMoreData: Bool = true
+    
     
     // MARK: - Pagination Properties
-    @Published var hasMoreData: Bool = true
     private var currentOffset: Int = 0
     private let limit: Int = 20
-
+    
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
     
@@ -37,10 +53,16 @@ class HomeViewModel: ObservableObject {
     ) {
         self.userService = userService
         self.getPokemonListUseCase = getPokemonListUseCase
-        loadInitialData()
+    }
+}
+
+// MARK: - Home ViewModel Input Implementation
+extension HomeViewModel: HomeViewModelInput {
+    
+    func loadInitialData() {
+        loadPokemonList()
     }
     
-    // MARK: - Public Methods
     func refreshData() {
         currentOffset = 0
         pokemonList.removeAll()
@@ -53,25 +75,7 @@ class HomeViewModel: ObservableObject {
         loadPokemonList()
     }
     
-    func handleError(_ error: Error) {
-        DispatchQueue.main.async { [weak self] in
-            self?.isLoading = false
-            
-            if error is SessionError {
-                // Session expired will be handled by SessionExpiredHandler automatically
-                return
-            }
-            
-            self?.errorMessage = error.localizedDescription
-            self?.showError = true
-        }
-    }
-    
     // MARK: - Private Methods
-    private func loadInitialData() {
-        loadPokemonList()
-    }
-    
     private func loadPokemonList() {
         guard !isLoading else { return }
         
@@ -105,6 +109,20 @@ class HomeViewModel: ObservableObject {
                     self.handleError(error)
                 }
             }
+        }
+    }
+    
+    private func handleError(_ error: Error) {
+        DispatchQueue.main.async { [weak self] in
+            self?.isLoading = false
+            
+            if error is SessionError {
+                // Session expired will be handled by SessionExpiredHandler automatically
+                return
+            }
+            
+            self?.errorMessage = error.localizedDescription
+            self?.showError = true
         }
     }
 }

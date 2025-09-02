@@ -7,6 +7,12 @@
 
 import Foundation
 
+enum SessionError: Error {
+    case tokenExpired
+    case unauthorized
+    case networkError
+}
+
 // MARK: - Session Manager Protocol
 protocol SessionManagerProtocol {
     var authToken: String? { get }
@@ -20,12 +26,9 @@ protocol SessionManagerProtocol {
 // MARK: - Session Manager Implementation
 class SessionManager: SessionManagerProtocol {
     
-    // MARK: - Properties
-    private let tokenUseCase: TokenUseCaseProtocol
-    
     // MARK: - Computed Properties
     var authToken: String? {
-        return tokenUseCase.getToken()
+        return "test" // test mock
     }
     
     var isLoggedIn: Bool {
@@ -33,17 +36,17 @@ class SessionManager: SessionManagerProtocol {
     }
     
     // MARK: - Initialization
-    init(tokenUseCase: TokenUseCaseProtocol) {
-        self.tokenUseCase = tokenUseCase
+    init() {
+        //inite
     }
     
     // MARK: - Public Methods
     func setAuthToken(_ token: String) {
-        tokenUseCase.saveToken(token)
+        // set token
     }
     
     func clearAuthToken() {
-        tokenUseCase.removeToken()
+        // clear token
     }
     
     func handleUnauthorized() {

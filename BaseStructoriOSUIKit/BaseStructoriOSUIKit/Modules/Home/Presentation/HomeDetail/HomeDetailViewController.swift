@@ -2,11 +2,12 @@
 //  HomeDetailViewController.swift
 //  BaseStructoriOSUIKit
 //
-//  Created by sahapap on 14/8/2568 BE.
+//  Created by sahapap on 8/8/2568 BE.
 //
 
 import UIKit
 import Combine
+import Kingfisher
 
 class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, NavigationConfigurable {
     
@@ -83,6 +84,9 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
         super.viewDidLoad()
         setupUI()
         bindViewModel()
+        
+        // Load pokemon detail
+        (viewModel as? HomeDetailViewModelInput)?.loadPokemonDetail()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -267,25 +271,7 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
     
     private func loadPokemonImage() {
         let imageURL = viewModel.pokemonImageURL
-        guard !imageURL.isEmpty else {
-            pokemonImageView.image = UIImage(systemName: "questionmark.circle")
-            return
-        }
-        
-        Task {
-            do {
-                let networkService = AppDIContainer.shared.makeNetworkService()
-                let imageData = try await networkService.downloadImage(from: imageURL)
-                
-                await MainActor.run {
-                    self.pokemonImageView.image = UIImage(data: imageData)
-                }
-            } catch {
-                await MainActor.run {
-                    self.pokemonImageView.image = UIImage(systemName: "exclamationmark.circle")
-                }
-            }
-        }
+        pokemonImageView.loadPokemonImage(from: imageURL)
     }
     
     private func showErrorAlert(message: String) {
@@ -301,7 +287,7 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
     }
     
     private func shareButtonTapped() {
-        let shareText = "Check out \(viewModel.pokemonName) (\(viewModel.pokemonIdString))!"
+        let shareText = "Check out \(viewModel.pokemonName) (\(viewModel.pokemonId))!"
         let activityVC = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
         
         if let popover = activityVC.popoverPresentationController {

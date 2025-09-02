@@ -52,7 +52,8 @@ class AppCoordinator: BaseCoordinator {
         print("🔍 AppCoordinator showMainApp() called")
         
         // Start main coordinator through DI Container
-        let mainCoordinator = container.makeMainCoordinator(window: window)
+        let mainDIContainer = container.makeMainDIContainer()
+        let mainCoordinator = mainDIContainer.makeMainFlowCoordinator(window: window)
         mainCoordinator.onSignOut = { [weak self] in
             self?.showLoadingScreen()
         }

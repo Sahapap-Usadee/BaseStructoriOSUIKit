@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import Kingfisher
 
 class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigurable {
 
@@ -72,6 +73,9 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
         super.viewDidLoad()
         setupUI()
         bindViewModel()
+        
+        // Load initial data
+        viewModel.loadInitialData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -258,6 +262,13 @@ class PokemonCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        // Cancel any ongoing image loading
+        pokemonImageView.kf.cancelDownloadTask()
+        pokemonImageView.image = nil
+    }
+    
     private func setupUI() {
         contentView.addSubview(pokemonImageView)
         contentView.addSubview(nameLabel)
@@ -293,27 +304,7 @@ class PokemonCell: UITableViewCell {
     }
     
     private func loadPokemonImage(id: Int?) {
-        guard let id = id else {
-            pokemonImageView.image = UIImage(systemName: "questionmark.circle")
-            return
-        }
-        
-        let imageURL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/\(id).png"
-        
-        Task {
-            do {
-                let networkService = AppDIContainer.shared.makeNetworkService()
-                let imageData = try await networkService.downloadImage(from: imageURL)
-                
-                await MainActor.run {
-                    self.pokemonImageView.image = UIImage(data: imageData)
-                }
-            } catch {
-                await MainActor.run {
-                    self.pokemonImageView.image = UIImage(systemName: "exclamationmark.circle")
-                }
-            }
-        }
+        pokemonImageView.loadPokemonImage(by: id)
     }
 }
 

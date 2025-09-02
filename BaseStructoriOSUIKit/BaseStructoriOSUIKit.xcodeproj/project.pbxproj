@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3D8BFD602E66D922000496AA /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 3D8BFD5F2E66D922000496AA /* Kingfisher */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3DC5AD662E45D99100F0C41D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -65,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D8BFD602E66D922000496AA /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +130,7 @@
 			);
 			name = BaseStructoriOSUIKit;
 			packageProductDependencies = (
+				3D8BFD5F2E66D922000496AA /* Kingfisher */,
 			);
 			productName = BaseStructoriOSUIKit;
 			productReference = 3DC5AD4F2E45D99000F0C41D /* BaseStructoriOSUIKit.app */;
@@ -209,6 +215,9 @@
 			);
 			mainGroup = 3DC5AD462E45D99000F0C41D;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3D8BFD5E2E66D922000496AA /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3DC5AD502E45D99000F0C41D /* Products */;
 			projectDirPath = "";
@@ -580,6 +589,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3D8BFD5E2E66D922000496AA /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3D8BFD5F2E66D922000496AA /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3D8BFD5E2E66D922000496AA /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3DC5AD472E45D99000F0C41D /* Project object */;
 }
