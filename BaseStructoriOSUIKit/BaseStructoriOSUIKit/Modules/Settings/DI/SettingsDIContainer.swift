@@ -32,9 +32,8 @@ class SettingsDIContainer {
 extension SettingsDIContainer: SettingsFactoryProtocol {
 
     func makeSettingsViewModel() -> SettingsViewModel {
-        let userService = appDIContainer.makeUserService()
-        print("⚙️ SettingsDIContainer - UserService: \(userService)")
-        return SettingsViewModel(userService: userService)
+        let userManager = appDIContainer.makeUserManager()
+        return SettingsViewModel(userManager: userManager)
     }
     
     func makeSettingsViewController() -> SettingsViewController {
