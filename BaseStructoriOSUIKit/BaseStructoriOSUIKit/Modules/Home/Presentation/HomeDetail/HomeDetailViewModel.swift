@@ -131,11 +131,6 @@ extension HomeDetailViewModel: HomeDetailViewModelInput {
         DispatchQueue.main.async { [weak self] in
             self?.isLoading = false
             
-            if error is SessionError {
-                // Session expired will be handled by SessionExpiredHandler automatically
-                return
-            }
-            
             self?.errorMessage = error.localizedDescription
             self?.showError = true
         }
