@@ -28,7 +28,7 @@ protocol HomeViewModelOutput: ObservableObject {
 class HomeViewModel: HomeViewModelOutput {
     
     // MARK: - Services & Use Cases
-    public let userService: UserServiceProtocol
+    public let userManager: UserManagerProtocol
     private let getPokemonListUseCase: GetPokemonListUseCaseProtocol
     
     // MARK: - Published Properties
@@ -48,10 +48,10 @@ class HomeViewModel: HomeViewModelOutput {
     
     // MARK: - Initialization
     init(
-        userService: UserServiceProtocol,
+        userManager: UserManagerProtocol,
         getPokemonListUseCase: GetPokemonListUseCaseProtocol
     ) {
-        self.userService = userService
+        self.userManager = userManager
         self.getPokemonListUseCase = getPokemonListUseCase
     }
 }

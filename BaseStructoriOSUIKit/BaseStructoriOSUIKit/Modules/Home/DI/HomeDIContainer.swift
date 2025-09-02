@@ -50,10 +50,9 @@ class HomeDIContainer {
 // MARK: - Home DI Container + Factory
 extension HomeDIContainer: HomeFactoryProtocol {
     func makeHomeViewModel() -> HomeViewModel {
-        let userService = appDIContainer.makeUserService()
-        print("🏠 HomeDIContainer - UserService: \(userService)")
+        let userManager = appDIContainer.makeUserManager()
         return HomeViewModel(
-            userService: userService,
+            userManager: userManager,
             getPokemonListUseCase: getPokemonListUseCase
         )
     }

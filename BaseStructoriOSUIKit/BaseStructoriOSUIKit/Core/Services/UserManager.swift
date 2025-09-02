@@ -1,5 +1,5 @@
 //
-//  UserService.swift
+//  UserManager.swift
 //  BaseStructoriOSUIKit
 //
 //  Created by AI Assistant on 2024
@@ -17,13 +17,12 @@ struct UserData: Codable {
 }
 
 // MARK: - User Service Protocol
-protocol UserServiceProtocol {
+protocol UserManagerProtocol {
     func updatecurrentUser(_ userData: UserData)
     func getUserData() -> UserData?
 }
 
-// MARK: - User Service Implementation
-class UserService: UserServiceProtocol {
+class UserManager: UserManagerProtocol {
 
     var user: UserData
     // MARK: - Initialization

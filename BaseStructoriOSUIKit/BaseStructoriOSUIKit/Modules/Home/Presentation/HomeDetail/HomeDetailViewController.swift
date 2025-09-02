@@ -86,7 +86,7 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
         bindViewModel()
         
         // Load pokemon detail
-        (viewModel as? HomeDetailViewModelInput)?.loadPokemonDetail()
+        viewModel.loadPokemonDetail()
     }
 
     override func viewWillAppear(_ animated: Bool) {

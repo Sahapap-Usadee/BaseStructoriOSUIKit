@@ -228,5 +228,5 @@ class ListViewController: UIViewController, NavigationConfigurable {
 }
 
 #Preview {
-    ListViewController(viewModel: .init(userService: AppDIContainer.shared.makeUserService()))
+    ListViewController(viewModel: .init(userManager: AppDIContainer.shared.makeUserManager()))
 }

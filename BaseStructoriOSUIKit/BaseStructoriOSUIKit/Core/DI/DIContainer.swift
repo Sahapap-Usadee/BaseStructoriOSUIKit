@@ -12,7 +12,7 @@ protocol DIContainer {
     // Core Services
     func makeNetworkService() -> EnhancedNetworkServiceProtocol
     func makeSessionManager() -> SessionManagerProtocol
-    func makeUserService() -> UserServiceProtocol
+    func makeUserManager() -> UserManagerProtocol
 
     // Module DI Containers
     func makeHomeDIContainer() -> HomeDIContainer
@@ -31,8 +31,7 @@ class AppDIContainer {
     private lazy var sessionManager: SessionManagerProtocol = SessionManager()
     private lazy var networkService: EnhancedNetworkServiceProtocol = EnhancedNetworkService(sessionManager: sessionManager)
 
-    // Other Services
-    private lazy var userService: UserServiceProtocol = UserService()
+    private lazy var userManager: UserManagerProtocol = UserManager()
 }
 
 extension AppDIContainer: DIContainer {
@@ -46,8 +45,8 @@ extension AppDIContainer: DIContainer {
         return sessionManager
     }
 
-    func makeUserService() -> UserServiceProtocol {
-        return userService
+    func makeUserManager() -> UserManagerProtocol {
+        return userManager
     }
 
     // MARK: Module Containers
