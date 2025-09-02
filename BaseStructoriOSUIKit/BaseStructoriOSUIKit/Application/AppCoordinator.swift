@@ -41,9 +41,7 @@ class AppCoordinator: BaseCoordinator {
     }
     
     // MARK: - State Management
-    private func transitionTo(_ newState: AppState) {
-        guard currentState != newState else { return }
-        
+    private func transitionTo(_ newState: AppState) {        
         let previousState = currentState
         currentState = newState
         

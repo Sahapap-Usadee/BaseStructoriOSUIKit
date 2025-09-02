@@ -7,6 +7,12 @@
 
 import Foundation
 
+protocol PokemonRepositoryProtocol {
+    func fetchPokemonList(limit: Int, offset: Int) async throws -> PokemonList
+    func fetchPokemonDetail(id: Int) async throws -> Pokemon
+    func fetchPokemonDetail(name: String) async throws -> Pokemon
+}
+
 class PokemonRepositoryImpl: PokemonRepositoryProtocol {
     private let remoteDataSource: PokemonRemoteDataSourceProtocol
     
@@ -17,21 +23,13 @@ class PokemonRepositoryImpl: PokemonRepositoryProtocol {
     }
     
     func fetchPokemonList(limit: Int, offset: Int) async throws -> PokemonList {
-        
         do {
             // Fetch from remote
             let dto = try await remoteDataSource.fetchPokemonList(limit: limit, offset: offset)
             
             return dto.toDomain()
-        } catch let error as EnhancedNetworkError {
-            switch error {
-            case .unauthorized, .tokenExpired:
-                throw SessionError.tokenExpired
-            default:
-                throw PokemonError.networkFailure(error.localizedDescription)
-            }
         } catch {
-            throw PokemonError.networkFailure(error.localizedDescription)
+            throw error
         }
     }
     
@@ -41,17 +39,8 @@ class PokemonRepositoryImpl: PokemonRepositoryProtocol {
             let dto = try await remoteDataSource.fetchPokemonDetail(id: id)
             
             return dto.toDomain()
-        } catch let error as EnhancedNetworkError {
-            switch error {
-            case .unauthorized, .tokenExpired:
-                throw SessionError.tokenExpired
-            case .serverError(404, _):
-                throw PokemonError.pokemonNotFound
-            default:
-                throw PokemonError.networkFailure(error.localizedDescription)
-            }
         } catch {
-            throw PokemonError.networkFailure(error.localizedDescription)
+            throw error
         }
     }
     
@@ -61,17 +50,8 @@ class PokemonRepositoryImpl: PokemonRepositoryProtocol {
             let dto = try await remoteDataSource.fetchPokemonDetail(name: name)
             
             return dto.toDomain()
-        } catch let error as EnhancedNetworkError {
-            switch error {
-            case .unauthorized, .tokenExpired:
-                throw SessionError.tokenExpired
-            case .serverError(404, _):
-                throw PokemonError.pokemonNotFound
-            default:
-                throw PokemonError.networkFailure(error.localizedDescription)
-            }
         } catch {
-            throw PokemonError.networkFailure(error.localizedDescription)
+            throw error
         }
     }
 }
