@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - GetPokemonList UseCase
 protocol GetPokemonListUseCaseProtocol {
-    func execute(limit: Int, offset: Int) async throws -> PokemonListResponse
+    func execute(limit: Int, offset: Int) async throws -> PokemonList
 }
 
 class GetPokemonListUseCase: GetPokemonListUseCaseProtocol {
@@ -19,7 +19,7 @@ class GetPokemonListUseCase: GetPokemonListUseCaseProtocol {
         self.repository = repository
     }
     
-    func execute(limit: Int = 20, offset: Int = 0) async throws -> PokemonListResponse {
+    func execute(limit: Int = 20, offset: Int = 0) async throws -> PokemonList {
         return try await repository.fetchPokemonList(limit: limit, offset: offset)
     }
 }

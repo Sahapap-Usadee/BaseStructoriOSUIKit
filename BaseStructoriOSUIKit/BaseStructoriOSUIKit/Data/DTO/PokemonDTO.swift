@@ -107,8 +107,8 @@ struct PokemonAbilityDTO: Codable {
 
 // MARK: - DTO to Domain Mappers
 extension PokemonListResponseDTO {
-    func toDomain() -> PokemonListResponse {
-        return PokemonListResponse(
+    func toDomain() -> PokemonList {
+        return PokemonList(
             count: count,
             next: next,
             previous: previous,

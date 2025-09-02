@@ -16,7 +16,7 @@ class PokemonRepositoryImpl: PokemonRepositoryProtocol {
         self.remoteDataSource = remoteDataSource
     }
     
-    func fetchPokemonList(limit: Int, offset: Int) async throws -> PokemonListResponse {
+    func fetchPokemonList(limit: Int, offset: Int) async throws -> PokemonList {
         
         do {
             // Fetch from remote

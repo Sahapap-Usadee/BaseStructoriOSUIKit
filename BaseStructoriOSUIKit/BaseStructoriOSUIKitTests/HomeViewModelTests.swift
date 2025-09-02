@@ -51,7 +51,7 @@ class HomeViewModelTests: XCTestCase {
     func testLoadInitialData_ShouldUpdateLoadingState() {
         // Arrange
         mockGetPokemonListUseCase.mockResult = .success(
-            PokemonListResponse(
+            PokemonList(
                 count: 2,
                 next: nil,
                 previous: nil,
@@ -88,7 +88,7 @@ class HomeViewModelTests: XCTestCase {
         ]
         
         mockGetPokemonListUseCase.mockResult = .success(
-            PokemonListResponse(
+            PokemonList(
                 count: 2,
                 next: nil,
                 previous: nil,
@@ -153,7 +153,7 @@ class HomeViewModelTests: XCTestCase {
         ]
         
         mockGetPokemonListUseCase.mockResult = .success(
-            PokemonListResponse(
+            PokemonList(
                 count: 1,
                 next: nil,
                 previous: nil,
@@ -193,7 +193,7 @@ class HomeViewModelTests: XCTestCase {
         sut.hasMoreData = true
         
         mockGetPokemonListUseCase.mockResult = .success(
-            PokemonListResponse(
+            PokemonList(
                 count: 2,
                 next: nil,
                 previous: nil,
@@ -248,10 +248,10 @@ class MockUserService: UserServiceProtocol {
 }
 
 class MockGetPokemonListUseCase: GetPokemonListUseCaseProtocol {
-    var mockResult: Result<PokemonListResponse, Error>!
+    var mockResult: Result<PokemonList, Error>!
     var executeWasCalled = false
     
-    func execute(limit: Int, offset: Int) async throws -> PokemonListResponse {
+    func execute(limit: Int, offset: Int) async throws -> PokemonList {
         executeWasCalled = true
         
         switch mockResult {

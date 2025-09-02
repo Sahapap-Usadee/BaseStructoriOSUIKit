@@ -44,7 +44,7 @@ struct PokemonListItem {
     }
 }
 
-struct PokemonListResponse {
+struct PokemonList {
     let count: Int
     let next: String?
     let previous: String?

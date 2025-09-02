@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - Repository Protocol
 protocol PokemonRepositoryProtocol {
-    func fetchPokemonList(limit: Int, offset: Int) async throws -> PokemonListResponse
+    func fetchPokemonList(limit: Int, offset: Int) async throws -> PokemonList
     func fetchPokemonDetail(id: Int) async throws -> Pokemon
     func fetchPokemonDetail(name: String) async throws -> Pokemon
 }
