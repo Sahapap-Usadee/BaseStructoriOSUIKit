@@ -7,12 +7,6 @@
 
 import Foundation
 
-enum SessionError: Error {
-    case tokenExpired
-    case unauthorized
-    case networkError
-}
-
 // MARK: - Session Manager Protocol
 protocol SessionManagerProtocol {
     var authToken: String? { get }
