@@ -21,7 +21,7 @@ class HomeViewModelTests: XCTestCase {
         mockUserService = MockUserService()
         mockGetPokemonListUseCase = MockGetPokemonListUseCase()
         sut = HomeViewModel(
-            userService: mockUserService,
+            userManager: mockUserService,
             getPokemonListUseCase: mockGetPokemonListUseCase
         )
         cancellables = Set<AnyCancellable>()
