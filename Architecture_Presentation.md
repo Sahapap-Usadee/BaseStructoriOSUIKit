@@ -143,26 +143,88 @@ protocol Coordinator: AnyObject {
     var navigationController: UINavigationController { get set }
     var childCoordinators: [Coordinator] { get set }
     var parentCoordinator: Coordinator? { get set }
-    
+
+    /// เริ่มต้น coordinator และแสดงหน้าจอแรก
     func start()
+
+    /// ลบ child coordinator เมื่อทำงานเสร็จ
     func childDidFinish(_ child: Coordinator)
+
+    /// ตัวเลือก: ทำความสะอาดก่อน coordinator จะถูกปิด
     func finish()
+}
+
+// Base Coordinator Implementation
+class BaseCoordinator: Coordinator {
+    var navigationController: UINavigationController
+    var childCoordinators: [Coordinator] = []
+    weak var parentCoordinator: Coordinator?
+
+    init(navigationController: UINavigationController = UINavigationController()) {
+        self.navigationController = navigationController
+    }
+
+    func start() {
+        fatalError("Subclasses must implement start method")
+    }
+
+    // Helper Methods สำหรับการนำทาง
+    func pushViewController(_ viewController: UIViewController, animated: Bool = true) {
+        navigationController.pushViewController(viewController, animated: animated)
+    }
+
+    func popViewController(animated: Bool = true) {
+        navigationController.popViewController(animated: animated)
+    }
 }
 ```
 
 ### 2. Dependency Injection Container
 
 ```swift
-// DIContainer manages all dependencies
-class DIContainer {
-    // Services
+// Service Factory Protocols
+protocol ServiceFactory {
     func makeNetworkService() -> NetworkServiceProtocol
+    func makeSessionManager() -> SessionManagerProtocol
     func makeUserManager() -> UserManagerProtocol
+}
+
+protocol CoordinatorFactory {
+    func makeAppCoordinator(window: UIWindow) -> AppCoordinator
+}
+
+protocol ModuleContainerFactory {
+    func makeMainDIContainer() -> MainDIContainer
+}
+
+// App DI Container (Composition Root)
+class AppDIContainer {
+    static let shared = AppDIContainer()
     
-    // Module containers
-    func makeHomeDIContainer() -> HomeDIContainer
-    func makeListDIContainer() -> ListDIContainer
-    // ...
+    private init() {}
+    
+    // Lazy Services
+    private lazy var sessionManager: SessionManagerProtocol = SessionManager()
+    private lazy var networkService: NetworkServiceProtocol = NetworkService(sessionManager: sessionManager)
+    private lazy var userManager: UserManagerProtocol = UserManager()
+    
+    // Module Containers
+    private lazy var mainDIContainer: MainDIContainer = MainDIContainer(appDIContainer: self)
+}
+
+// Factory Implementations
+extension AppDIContainer: ServiceFactory {
+    func makeNetworkService() -> NetworkServiceProtocol {
+        return networkService
+    }
+    
+    func makeSessionManager() -> SessionManagerProtocol {
+        return sessionManager
+    }
+    
+    func makeUserManager() -> UserManagerProtocol {
+        return userManager
+    }
 }
 ```
 
@@ -171,11 +233,15 @@ class DIContainer {
 ```swift
 // Base class for all view controllers
 class BaseViewController<VM: ObservableObject>: UIViewController {
-    let viewModel: VM
-    
-    init(viewModel: VM) {
+    public var viewModel: VM
+
+    public init(viewModel: VM, bundle: Bundle? = nil) {
         self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
+        super.init(nibName: nil, bundle: bundle)
+    }
+
+    required public init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
 ```
@@ -193,15 +259,46 @@ ModuleName/
 ├── Navigation/
 │   └── ModuleCoordinator.swift    # Module navigation
 └── Presentation/
-    ├── Views/
-    │   └── ModuleViewController.swift
-    └── ViewModels/
-        └── ModuleViewModel.swift
+    ├── ModuleMain/
+    │   ├── ModuleViewController.swift
+    │   └── ModuleViewModel.swift
+    └── ModuleDetail/
+        ├── ModuleDetailViewController.swift
+        └── ModuleDetailViewModel.swift
+```
+
+**Example: Home Module Structure**
+```text
+Home/
+├── DI/
+│   └── HomeDIContainer.swift      # Factory protocols & container
+├── Navigation/
+│   └── HomeCoordinator.swift      # Navigation logic
+└── Presentation/
+    ├── HomeMain/
+    │   ├── HomeViewController.swift    # Main list view
+    │   └── HomeViewModel.swift         # Main list logic
+    └── HomeDetail/
+        ├── HomeDetailViewController.swift  # Detail view
+        └── HomeDetailViewModel.swift       # Detail logic
 ```
 
 ### Module DI Container Pattern
 
 ```swift
+// MARK: - Home Factory Protocol
+protocol HomeFactoryProtocol {
+    func makeHomeViewModel() -> HomeViewModel
+    func makeHomeViewController() -> HomeViewController
+    func makeHomeDetailViewModel(pokemonId: Int) -> HomeDetailViewModel
+    func makeHomeDetailViewController(pokemonId: Int) -> HomeDetailViewController
+}
+
+protocol HomeCoordinatorFactory {
+    func makeHomeFlowCoordinator(navigationController: UINavigationController) -> HomeCoordinator
+}
+
+// MARK: - Home DI Container
 class HomeDIContainer {
     private let appDIContainer: AppDIContainer
     
@@ -209,14 +306,30 @@ class HomeDIContainer {
         self.appDIContainer = appDIContainer
     }
     
-    // MARK: - Use Cases
+    // MARK: - Pokemon Data Layer 
+    private lazy var pokemonRemoteDataSource: PokemonRemoteDataSourceProtocol = 
+        PokemonRemoteDataSource(networkService: appDIContainer.makeNetworkService())
+    private lazy var pokemonRepository: PokemonRepositoryProtocol = 
+        PokemonRepositoryImpl(remoteDataSource: pokemonRemoteDataSource)
     private lazy var getPokemonListUseCase: GetPokemonListUseCaseProtocol = 
         GetPokemonListUseCase(repository: pokemonRepository)
-    
-    // MARK: - Factory Methods
+    private lazy var getPokemonDetailUseCase: GetPokemonDetailUseCaseProtocol = 
+        GetPokemonDetailUseCase(repository: pokemonRepository)
+}
+
+// MARK: - Coordinator Factory
+extension HomeDIContainer: HomeCoordinatorFactory {
+    func makeHomeFlowCoordinator(navigationController: UINavigationController) -> HomeCoordinator {
+        return HomeCoordinator(navigationController: navigationController, container: self)
+    }
+}
+
+// MARK: - Factory Implementation
+extension HomeDIContainer: HomeFactoryProtocol {
     func makeHomeViewModel() -> HomeViewModel {
+        let userManager = appDIContainer.makeUserManager()
         return HomeViewModel(
-            userManager: appDIContainer.makeUserManager(),
+            userManager: userManager,
             getPokemonListUseCase: getPokemonListUseCase
         )
     }
@@ -226,8 +339,16 @@ class HomeDIContainer {
         return HomeViewController(viewModel: viewModel)
     }
     
-    func makeHomeFlowCoordinator(navigationController: UINavigationController) -> HomeCoordinator {
-        return HomeCoordinator(navigationController: navigationController, container: self)
+    func makeHomeDetailViewModel(pokemonId: Int) -> HomeDetailViewModel {
+        return HomeDetailViewModel(
+            pokemonId: pokemonId,
+            getPokemonDetailUseCase: getPokemonDetailUseCase
+        )
+    }
+    
+    func makeHomeDetailViewController(pokemonId: Int) -> HomeDetailViewController {
+        let viewModel = makeHomeDetailViewModel(pokemonId: pokemonId)
+        return HomeDetailViewController(viewModel: viewModel)
     }
 }
 ```
@@ -259,11 +380,36 @@ AppCoordinator
 ```swift
 class HomeCoordinator: BaseCoordinator {
     private let container: HomeDIContainer
+
+    init(navigationController: UINavigationController, container: HomeDIContainer) {
+        self.container = container
+        super.init(navigationController: navigationController)
+    }
     
-    func showDetail(pokemonId: Int) {
+    override func start() {
+        let homeViewController = container.makeHomeViewController()
+        homeViewController.coordinator = self
+        pushViewController(homeViewController, animated: false)
+    }
+    
+    func showDetail(pokemonId: Int, hidesBottomBar: Bool = true) {
+        // สร้าง DetailViewController ผ่าน Module DI Container
         let detailViewController = container.makeHomeDetailViewController(pokemonId: pokemonId)
         detailViewController.coordinator = self
-        navigationController.pushViewController(detailViewController, animated: true)
+        // Hide TabBar when pushing (full screen)
+        detailViewController.hidesBottomBarWhenPushed = hidesBottomBar
+        
+        pushViewController(detailViewController, animated: true)
+    }
+    
+    func showDetailModal(pokemonId: Int) {
+        let detailViewController = container.makeHomeDetailViewController(pokemonId: pokemonId)
+        detailViewController.coordinator = self
+        
+        // Wrap in NavigationController for modal presentation
+        let modalNavController = UINavigationController(rootViewController: detailViewController)
+        modalNavController.modalPresentationStyle = .fullScreen
+        presentViewController(modalNavController)
     }
 }
 ```
