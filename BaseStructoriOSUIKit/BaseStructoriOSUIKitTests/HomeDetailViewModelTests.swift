@@ -1,9 +1,16 @@
+//
+//  HomeDetailViewModelTests.swift
+//  BaseStructoriOSUIKitTests
+//
+//  Created by sahapap on 4/9/2568 BE.
+//
+
 import Testing
 import Foundation
 @testable import BaseStructoriOSUIKit
 
 @Suite("HomeDetailViewModel Swift Testing")
-class HomeDetailViewModelSwiftTestsFixed {
+class HomeDetailViewModelTests {
     var sut: HomeDetailViewModel!
     var mockGetPokemonDetailUseCase: MockGetPokemonDetailUseCaseSwiftTesting!
     

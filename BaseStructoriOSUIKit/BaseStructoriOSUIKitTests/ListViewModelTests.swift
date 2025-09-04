@@ -10,7 +10,7 @@ import Combine
 @testable import BaseStructoriOSUIKit
 
 @Suite("ListViewModel Tests")
-struct ListViewModelSwiftTests {
+struct ListViewModelTests {
     
     let mockUserManager: MockUserManager
     let sut: ListViewModel

@@ -1,5 +1,5 @@
 //
-//  HomeViewModelSwiftTests.swift
+//  HomeViewModelTests.swift
 //  BaseStructoriOSUIKitTests
 //
 //  Created by sahapap on 4/9/2568 BE.
@@ -11,7 +11,7 @@ import Foundation
 @testable import BaseStructoriOSUIKit
 
 @Suite("HomeViewModel Tests")
-struct HomeViewModelSwiftTests {
+struct HomeViewModelTests {
     
     let mockUserManager: MockUserManager
     let mockGetPokemonListUseCase: MockGetPokemonListUseCase
