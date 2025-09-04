@@ -126,10 +126,9 @@ BaseStructoriOSUIKit/
 │
 ├── Resource/                   # Resources
 │   └── Localization/          # Localization files
-│
-└── Assets.xcassets/           # App assets
-│   └── Localization/
-└── Assets.xcassets/
+│       ├── Localizable.xcstrings
+│       └── InfoPlist.xcstrings
+
 ```
 
 ---
