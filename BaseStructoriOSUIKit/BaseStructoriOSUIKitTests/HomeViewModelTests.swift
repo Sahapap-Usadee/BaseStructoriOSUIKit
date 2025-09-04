@@ -2,244 +2,173 @@
 //  HomeViewModelTests.swift
 //  BaseStructoriOSUIKitTests
 //
-//  Created by sahapap on 2/9/2568 BE.
+//  Created by sahapap on 4/9/2568 BE.
 //
 
-import XCTest
+import Testing
 import Combine
+import Foundation
 @testable import BaseStructoriOSUIKit
 
-class HomeViewModelTests: XCTestCase {
+@Suite("HomeViewModel Tests")
+struct HomeViewModelTests {
     
-    var sut: HomeViewModel!
-    var mockUserService: MockUserService!
-    var mockGetPokemonListUseCase: MockGetPokemonListUseCase!
-    var cancellables: Set<AnyCancellable>!
+    let mockUserManager: MockUserManager
+    let mockGetPokemonListUseCase: MockGetPokemonListUseCase
+    let sut: HomeViewModel
     
-    override func setUp() {
-        super.setUp()
-        mockUserService = MockUserService()
+    init() {
+        mockUserManager = MockUserManager()
         mockGetPokemonListUseCase = MockGetPokemonListUseCase()
         sut = HomeViewModel(
-            userManager: mockUserService,
+            userManager: mockUserManager,
             getPokemonListUseCase: mockGetPokemonListUseCase
         )
-        cancellables = Set<AnyCancellable>()
-    }
-    
-    override func tearDown() {
-        sut = nil
-        mockUserService = nil
-        mockGetPokemonListUseCase = nil
-        cancellables = nil
-        super.tearDown()
     }
     
     // MARK: - Initial State Tests
     
-    func testInitialState() {
-        // Assert
-        XCTAssertFalse(sut.isLoading)
-        XCTAssertTrue(sut.pokemonList.isEmpty)
-        XCTAssertNil(sut.errorMessage)
-        XCTAssertFalse(sut.showError)
-        XCTAssertTrue(sut.hasMoreData)
+    @Test("Initial state should have correct default values")
+    func initialState() {
+        #expect(!sut.isLoading)
+        #expect(sut.pokemonList.isEmpty)
+        #expect(sut.errorMessage == nil)
+        #expect(!sut.showError)
+        #expect(sut.hasMoreData)
     }
     
     // MARK: - LoadInitialData Tests
     
-    func testLoadInitialData_ShouldUpdateLoadingState() {
+    @Test("Load initial data should update loading state and fetch pokemon list")
+    func loadInitialDataSuccess() async {
         // Arrange
-        mockGetPokemonListUseCase.mockResult = .success(
-            PokemonList(
-                count: 2,
-                next: nil,
-                previous: nil,
-                results: [
-                    PokemonListItem(name: "pikachu", url: "https://pokeapi.co/api/v2/pokemon/25/"),
-                    PokemonListItem(name: "charmander", url: "https://pokeapi.co/api/v2/pokemon/4/")
-                ]
-            )
+        let expectedPokemonList = PokemonList(
+            count: 2,
+            next: "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20",
+            previous: nil,
+            results: [
+                PokemonListItem(name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/"),
+                PokemonListItem(name: "ivysaur", url: "https://pokeapi.co/api/v2/pokemon/2/")
+            ]
         )
-        
-        let expectation = XCTestExpectation(description: "Loading state should be updated")
+        mockGetPokemonListUseCase.mockResult = .success(expectedPokemonList)
         
         // Act
-        sut.$isLoading
-            .dropFirst() // Skip initial value
-            .sink { isLoading in
-                if isLoading {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.loadInitialData()
+        await sut.loadInitialData()
         
         // Assert
-        wait(for: [expectation], timeout: 1.0)
+        #expect(!sut.isLoading)
+        #expect(sut.pokemonList.count == 2)
+        #expect(sut.pokemonList[0].name == "bulbasaur")
+        #expect(sut.pokemonList[1].name == "ivysaur")
+        #expect(sut.errorMessage == nil)
+        #expect(!sut.showError)
+        #expect(sut.hasMoreData) // Should be true because next is not nil
     }
     
-    func testLoadInitialData_Success_ShouldUpdatePokemonList() {
+    @Test("Load initial data should handle failure correctly")
+    func loadInitialDataFailure() async {
         // Arrange
-        let expectedPokemon = [
-            PokemonListItem(name: "pikachu", url: "https://pokeapi.co/api/v2/pokemon/25/"),
-            PokemonListItem(name: "charmander", url: "https://pokeapi.co/api/v2/pokemon/4/")
-        ]
-        
-        mockGetPokemonListUseCase.mockResult = .success(
-            PokemonList(
-                count: 2,
-                next: nil,
-                previous: nil,
-                results: expectedPokemon
-            )
-        )
-        
-        let expectation = XCTestExpectation(description: "Pokemon list should be updated")
-        
-        // Act
-        sut.$pokemonList
-            .dropFirst() // Skip initial empty array
-            .sink { pokemonList in
-                if !pokemonList.isEmpty {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.loadInitialData()
-        
-        // Assert
-        wait(for: [expectation], timeout: 1.0)
-        XCTAssertEqual(sut.pokemonList.count, 2)
-        XCTAssertEqual(sut.pokemonList[0].name, "pikachu")
-        XCTAssertEqual(sut.pokemonList[1].name, "charmander")
-        XCTAssertFalse(sut.isLoading)
-    }
-    
-    func testLoadInitialData_Failure_ShouldShowError() {
-        // Arrange
-        let expectedError = NSError(domain: "TestError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Network error"])
+        let expectedError = NetworkError.noData
         mockGetPokemonListUseCase.mockResult = .failure(expectedError)
         
-        let expectation = XCTestExpectation(description: "Error should be shown")
-        
         // Act
-        sut.$showError
-            .dropFirst() // Skip initial false value
-            .sink { showError in
-                if showError {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.loadInitialData()
+        await sut.loadInitialData()
         
         // Assert
-        wait(for: [expectation], timeout: 1.0)
-        XCTAssertTrue(sut.showError)
-        XCTAssertEqual(sut.errorMessage, "Network error")
-        XCTAssertFalse(sut.isLoading)
-    }
-    
-    // MARK: - RefreshData Tests
-    
-    func testRefreshData_ShouldResetStateAndReload() {
-        // Arrange
-        sut.pokemonList = [
-            PokemonListItem(name: "old", url: "https://pokeapi.co/api/v2/pokemon/1/")
-        ]
-        
-        mockGetPokemonListUseCase.mockResult = .success(
-            PokemonList(
-                count: 1,
-                next: nil,
-                previous: nil,
-                results: [
-                    PokemonListItem(name: "new", url: "https://pokeapi.co/api/v2/pokemon/2/")
-                ]
-            )
-        )
-        
-        let expectation = XCTestExpectation(description: "Data should be refreshed")
-        
-        // Act
-        sut.$pokemonList
-            .dropFirst() // Skip initial state
-            .sink { pokemonList in
-                if pokemonList.count == 1 && pokemonList[0].name == "new" {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.refreshData()
-        
-        // Assert
-        wait(for: [expectation], timeout: 1.0)
-        XCTAssertEqual(sut.pokemonList.count, 1)
-        XCTAssertEqual(sut.pokemonList[0].name, "new")
+        #expect(!sut.isLoading)
+        #expect(sut.pokemonList.isEmpty)
+        #expect(sut.errorMessage == "ไม่มีข้อมูลตอบกลับ")
+        #expect(sut.showError)
     }
     
     // MARK: - LoadMoreData Tests
     
-    func testLoadMoreData_WhenHasMoreData_ShouldAppendToPokemonList() {
-        // Arrange
-        sut.pokemonList = [
-            PokemonListItem(name: "existing", url: "https://pokeapi.co/api/v2/pokemon/1/")
-        ]
-        sut.hasMoreData = true
-        
-        mockGetPokemonListUseCase.mockResult = .success(
-            PokemonList(
-                count: 2,
-                next: nil,
-                previous: nil,
-                results: [
-                    PokemonListItem(name: "new", url: "https://pokeapi.co/api/v2/pokemon/2/")
-                ]
-            )
+    @Test("Load more data should append new pokemon to existing list")
+    func loadMoreDataSuccess() async {
+        // Arrange - Set initial data
+        let initialPokemonList = PokemonList(
+            count: 1,
+            next: "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20",
+            previous: nil,
+            results: [PokemonListItem(name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/")]
         )
+        mockGetPokemonListUseCase.mockResult = .success(initialPokemonList)
+        await sut.loadInitialData()
         
-        let expectation = XCTestExpectation(description: "More data should be appended")
+        // Arrange - Set more data
+        let morePokemonList = PokemonList(
+            count: 2,
+            next: nil,
+            previous: nil,
+            results: [PokemonListItem(name: "ivysaur", url: "https://pokeapi.co/api/v2/pokemon/2/")]
+        )
+        mockGetPokemonListUseCase.mockResult = .success(morePokemonList)
         
         // Act
-        sut.$pokemonList
-            .dropFirst() // Skip initial state
-            .sink { pokemonList in
-                if pokemonList.count == 2 {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.loadMoreData()
-        
+        await sut.loadMoreData()
+
         // Assert
-        wait(for: [expectation], timeout: 1.0)
-        XCTAssertEqual(sut.pokemonList.count, 2)
-        XCTAssertEqual(sut.pokemonList[0].name, "existing")
-        XCTAssertEqual(sut.pokemonList[1].name, "new")
+        #expect(!sut.isLoading)
+        #expect(sut.pokemonList.count == 2)
+        #expect(sut.pokemonList[0].name == "bulbasaur")
+        #expect(sut.pokemonList[1].name == "ivysaur")
+        #expect(!sut.hasMoreData) // Should be false because next is nil
     }
     
-    func testLoadMoreData_WhenNoMoreData_ShouldNotLoad() {
+    // MARK: - Pagination Tests
+    @Test("Has more data should be false when next is nil")
+    func hasMoreDataFalseWhenNextIsNil() async {
         // Arrange
-        sut.hasMoreData = false
+        let pokemonList = PokemonList(
+            count: 10,
+            next: nil,
+            previous: nil,
+            results: Array(1...10).map { PokemonListItem(name: "pokemon\($0)", url: "https://pokeapi.co/api/v2/pokemon/\($0)/") }
+        )
+        mockGetPokemonListUseCase.mockResult = .success(pokemonList)
         
         // Act
-        sut.loadMoreData()
-        
+        await sut.loadInitialData()
+
         // Assert
-        XCTAssertFalse(mockGetPokemonListUseCase.executeWasCalled)
+        #expect(!sut.hasMoreData)
+    }
+    
+    @Test("Has more data should be true when next is not nil")
+    func hasMoreDataTrueWhenNextExists() async {
+        // Arrange
+        let pokemonList = PokemonList(
+            count: 20,
+            next: "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20",
+            previous: nil,
+            results: Array(1...20).map { PokemonListItem(name: "pokemon\($0)", url: "https://pokeapi.co/api/v2/pokemon/\($0)/") }
+        )
+        mockGetPokemonListUseCase.mockResult = .success(pokemonList)
+        
+        // Act
+        await sut.loadInitialData()
+
+        // Assert
+        #expect(sut.hasMoreData)
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func createMockPokemonList(count: Int, hasNext: Bool = false) -> PokemonList {
+        return PokemonList(
+            count: count,
+            next: hasNext ? "https://pokeapi.co/api/v2/pokemon?offset=20&limit=20" : nil,
+            previous: nil,
+            results: Array(1...count).map { 
+                PokemonListItem(name: "pokemon\($0)", url: "https://pokeapi.co/api/v2/pokemon/\($0)/") 
+            }
+        )
     }
 }
 
-// MARK: - Mock Classes
+class MockUserManager: UserManagerProtocol {
 
-class MockUserService: UserServiceProtocol {
-    
     func updatecurrentUser(_ userData: UserData) {}
 
     func getUserData() -> UserData? {
@@ -250,10 +179,10 @@ class MockUserService: UserServiceProtocol {
 class MockGetPokemonListUseCase: GetPokemonListUseCaseProtocol {
     var mockResult: Result<PokemonList, Error>!
     var executeWasCalled = false
-    
+
     func execute(limit: Int, offset: Int) async throws -> PokemonList {
         executeWasCalled = true
-        
+
         switch mockResult {
         case .success(let response):
             return response

@@ -75,7 +75,9 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
         bindViewModel()
         
         // Load initial data
-        viewModel.loadInitialData()
+        Task {
+            await viewModel.loadInitialData()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -175,7 +177,9 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     }
     
     @objc private func refreshData() {
-        viewModel.refreshData()
+        Task {
+            await viewModel.refreshData()
+        }
     }
     
     private func rightButtonTapped() {
@@ -201,7 +205,9 @@ extension HomeViewController: UITableViewDataSource {
         
         // Load more data when near the end
         if indexPath.row == viewModel.pokemonList.count - 3 {
-            viewModel.loadMoreData()
+            Task {
+                await viewModel.loadMoreData()
+            }
         }
         
         return cell
@@ -305,19 +311,5 @@ class PokemonCell: UITableViewCell {
     
     private func loadPokemonImage(id: Int?) {
         pokemonImageView.loadPokemonImage(by: id)
-    }
-}
-
-// MARK: - Base View Controller
-class BaseViewController<T>: UIViewController {
-    public var viewModel: T
-
-    public init(viewModel: T, bundle: Bundle? = nil) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: bundle)
-    }
-
-    required public init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
     }
 }

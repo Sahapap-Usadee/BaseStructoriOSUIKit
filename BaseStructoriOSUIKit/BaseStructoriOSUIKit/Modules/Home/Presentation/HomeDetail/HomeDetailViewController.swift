@@ -86,7 +86,9 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
         bindViewModel()
         
         // Load pokemon detail
-        viewModel.loadPokemonDetail()
+        Task {
+            await viewModel.loadPokemonDetail()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -278,7 +280,9 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
         let alert = UIAlertController(title: "เกิดข้อผิดพลาด", message: message, preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "ลองใหม่", style: .default) { [weak self] _ in
-            self?.viewModel.refreshData()
+            Task {
+                await self?.viewModel.refreshData()
+            }
         })
         
         alert.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))

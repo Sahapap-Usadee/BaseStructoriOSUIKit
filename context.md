@@ -18,18 +18,22 @@ BaseStructoriOSUIKit คือโปรเจกต์แอป iOS แบบโ
 ```
 BaseStructoriOSUIKit/
 ├── Application/
-│   ├── AppCoordinator.swift
 │   ├── AppDelegate.swift
 │   └── SceneDelegate.swift
 ├── Core/
+│   ├── Base/
+│   │   ├── BaseCoordinator.swift
+│   │   └── BaseViewController.swift
 │   ├── DI/
 │   │   └── DIContainer.swift
 │   ├── Extensions/
+│   ├── Managers/
+│   │   ├── NavigationManager.swift
+│   │   ├── SessionManager.swift
+│   │   └── UserManager.swift
 │   ├── Models/
 │   ├── Navigation/
-│   │   ├── Coordinator.swift
-│   │   ├── NavigationConfiguration.swift
-│   │   └── NavigationManager.swift
+│   │   └── AppCoordinator.swift
 │   └── Services/
 ├── Modules/
 │   ├── Home/

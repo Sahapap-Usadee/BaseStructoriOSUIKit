@@ -16,9 +16,9 @@ protocol PokemonRemoteDataSourceProtocol {
 
 // MARK: - Pokemon Remote Data Source Implementation
 class PokemonRemoteDataSource: PokemonRemoteDataSourceProtocol {
-    private let networkService: EnhancedNetworkServiceProtocol
+    private let networkService: NetworkServiceProtocol
     
-    init(networkService: EnhancedNetworkServiceProtocol) {
+    init(networkService: NetworkServiceProtocol) {
         self.networkService = networkService
     }
     

@@ -8,7 +8,7 @@
 import UIKit
 
 protocol ServiceFactory {
-    func makeNetworkService() -> EnhancedNetworkServiceProtocol
+    func makeNetworkService() -> NetworkServiceProtocol
     func makeSessionManager() -> SessionManagerProtocol
     func makeUserManager() -> UserManagerProtocol
 }
@@ -18,9 +18,6 @@ protocol CoordinatorFactory {
 }
 
 protocol ModuleContainerFactory {
-    func makeHomeDIContainer() -> HomeDIContainer
-    func makeListDIContainer() -> ListDIContainer
-    func makeSettingsDIContainer() -> SettingsDIContainer
     func makeMainDIContainer() -> MainDIContainer
 }
 
@@ -31,19 +28,16 @@ class AppDIContainer {
     private init() {}
 
     private lazy var sessionManager: SessionManagerProtocol = SessionManager()
-    private lazy var networkService: EnhancedNetworkServiceProtocol = EnhancedNetworkService(sessionManager: sessionManager)
+    private lazy var networkService: NetworkServiceProtocol = NetworkService(sessionManager: sessionManager)
     private lazy var userManager: UserManagerProtocol = UserManager()
 
-    private lazy var homeDIContainer: HomeDIContainer = HomeDIContainer(appDIContainer: self)
-    private lazy var listDIContainer: ListDIContainer = ListDIContainer(appDIContainer: self)
-    private lazy var settingsDIContainer: SettingsDIContainer = SettingsDIContainer(appDIContainer: self)
     private lazy var mainDIContainer: MainDIContainer = MainDIContainer(appDIContainer: self)
 }
 
 extension AppDIContainer: ServiceFactory {
 
     // MARK: Core Services
-    func makeNetworkService() -> EnhancedNetworkServiceProtocol {
+    func makeNetworkService() -> NetworkServiceProtocol {
         return networkService
     }
 
@@ -57,20 +51,7 @@ extension AppDIContainer: ServiceFactory {
 }
 
 extension AppDIContainer: ModuleContainerFactory {
-
     // MARK: Module Containers with Dependency Validation
-    func makeHomeDIContainer() -> HomeDIContainer {
-        return homeDIContainer
-    }
-
-    func makeListDIContainer() -> ListDIContainer {
-        return listDIContainer
-    }
-
-    func makeSettingsDIContainer() -> SettingsDIContainer {
-        return settingsDIContainer
-    }
-
     func makeMainDIContainer() -> MainDIContainer {
         return mainDIContainer
     }

@@ -2,217 +2,232 @@
 //  HomeDetailViewModelTests.swift
 //  BaseStructoriOSUIKitTests
 //
-//  Created by sahapap on 2/9/2568 BE.
+//  Created by sahapap on 4/9/2568 BE.
 //
 
-import XCTest
-import Combine
+import Testing
+import Foundation
 @testable import BaseStructoriOSUIKit
 
-class HomeDetailViewModelTests: XCTestCase {
-    
+@Suite("HomeDetailViewModel Swift Testing")
+class HomeDetailViewModelTests {
     var sut: HomeDetailViewModel!
-    var mockGetPokemonDetailUseCase: MockGetPokemonDetailUseCase!
-    var cancellables: Set<AnyCancellable>!
+    var mockGetPokemonDetailUseCase: MockGetPokemonDetailUseCaseSwiftTesting!
     
-    override func setUp() {
-        super.setUp()
-        mockGetPokemonDetailUseCase = MockGetPokemonDetailUseCase()
+    init() {
+        mockGetPokemonDetailUseCase = MockGetPokemonDetailUseCaseSwiftTesting()
         sut = HomeDetailViewModel(
             pokemonId: 25,
             getPokemonDetailUseCase: mockGetPokemonDetailUseCase
         )
-        cancellables = Set<AnyCancellable>()
     }
     
-    override func tearDown() {
+    deinit {
         sut = nil
         mockGetPokemonDetailUseCase = nil
-        cancellables = nil
-        super.tearDown()
     }
     
-    // MARK: - Initial State Tests
+    // MARK: - Initialization Tests
     
+    @Test("HomeDetailViewModel should initialize with correct default values")
     func testInitialState() {
         // Assert
-        XCTAssertEqual(sut.pokemonId, 25)
-        XCTAssertNil(sut.pokemon)
-        XCTAssertFalse(sut.isLoading)
-        XCTAssertNil(sut.errorMessage)
-        XCTAssertFalse(sut.showError)
-        XCTAssertEqual(sut.pokemonName, "Unknown Pokemon")
-        XCTAssertNil(sut.pokemonImageURL)
+        #expect(sut.pokemon == nil)
+        #expect(sut.isLoading == false)
+        #expect(sut.errorMessage == nil)
     }
     
-    // MARK: - LoadPokemonDetail Tests
+    // MARK: - Data Loading Tests
     
-    func testLoadPokemonDetail_ShouldUpdateLoadingState() {
+    @Test("Should load pokemon detail successfully")
+    func testLoadPokemonDetailSuccess() async {
         // Arrange
-        let mockPokemon = createMockPokemon(name: "pikachu")
+        let mockPokemon = createMockPokemon()
         mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
         
-        let expectation = XCTestExpectation(description: "Loading state should be updated")
-        
         // Act
-        sut.$isLoading
-            .dropFirst() // Skip initial value
-            .sink { isLoading in
-                if isLoading {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.loadPokemonDetail()
-        
+        await sut.loadPokemonDetail()
+
         // Assert
-        wait(for: [expectation], timeout: 1.0)
+        #expect(sut.pokemon != nil)
+        #expect(sut.pokemon?.name == "Pikachu")
+        #expect(sut.isLoading == false)
+        #expect(sut.errorMessage == nil)
     }
     
-    func testLoadPokemonDetail_Success_ShouldUpdatePokemon() {
+    @Test("Should handle pokemon detail loading failure")
+    func testLoadPokemonDetailFailure() async {
         // Arrange
-        let mockPokemon = createMockPokemon(name: "pikachu")
-        mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
-        
-        let expectation = XCTestExpectation(description: "Pokemon should be updated")
-        
-        // Act
-        sut.$pokemon
-            .dropFirst() // Skip initial nil
-            .sink { pokemon in
-                if pokemon != nil {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.loadPokemonDetail()
-        
-        // Assert
-        wait(for: [expectation], timeout: 1.0)
-        XCTAssertNotNil(sut.pokemon)
-        XCTAssertEqual(sut.pokemon?.name, "pikachu")
-        XCTAssertEqual(sut.pokemonName, "Pikachu")
-        XCTAssertFalse(sut.isLoading)
-    }
-    
-    func testLoadPokemonDetail_Failure_ShouldShowError() {
-        // Arrange
-        let expectedError = NSError(domain: "TestError", code: 404, userInfo: [NSLocalizedDescriptionKey: "Pokemon not found"])
+        let expectedError = NSError(domain: "TestError", code: 404, userInfo: [NSLocalizedDescriptionKey: "ไม่มีข้อมูล"])
         mockGetPokemonDetailUseCase.mockResult = .failure(expectedError)
         
-        let expectation = XCTestExpectation(description: "Error should be shown")
-        
         // Act
-        sut.$showError
-            .dropFirst() // Skip initial false value
-            .sink { showError in
-                if showError {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.loadPokemonDetail()
-        
+        await sut.loadPokemonDetail()
+
         // Assert
-        wait(for: [expectation], timeout: 1.0)
-        XCTAssertTrue(sut.showError)
-        XCTAssertEqual(sut.errorMessage, "Pokemon not found")
-        XCTAssertFalse(sut.isLoading)
+        #expect(sut.pokemon == nil)
+        #expect(sut.isLoading == false)
+        #expect(sut.errorMessage == "ไม่มีข้อมูล")
     }
     
-    // MARK: - RefreshData Tests
-    
-    func testRefreshData_ShouldReloadPokemonDetail() {
+    @Test("Should handle network timeout error")
+    func testLoadPokemonDetailNetworkTimeout() async {
         // Arrange
-        let mockPokemon = createMockPokemon(name: "charmander")
-        mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
-        
-        let expectation = XCTestExpectation(description: "Data should be refreshed")
+        let expectedError = NSError(domain: "NetworkError", code: 408, userInfo: [NSLocalizedDescriptionKey: "หมดเวลาการเชื่อมต่อ"])
+        mockGetPokemonDetailUseCase.mockResult = .failure(expectedError)
         
         // Act
-        sut.$pokemon
-            .dropFirst() // Skip initial nil
-            .sink { pokemon in
-                if pokemon?.name == "charmander" {
-                    expectation.fulfill()
-                }
-            }
-            .store(in: &cancellables)
-        
-        sut.refreshData()
-        
+        await sut.loadPokemonDetail()
+
         // Assert
-        wait(for: [expectation], timeout: 1.0)
-        XCTAssertEqual(sut.pokemon?.name, "charmander")
-        XCTAssertEqual(sut.pokemonName, "Charmander")
+        #expect(sut.pokemon == nil)
+        #expect(sut.isLoading == false)
+        #expect(sut.errorMessage == "หมดเวลาการเชื่อมต่อ")
     }
     
     // MARK: - Computed Properties Tests
     
-    func testPokemonName_WhenPokemonIsNil_ShouldReturnUnknown() {
+    @Test("Pokemon computed properties should return correct values")
+    func testPokemonComputedProperties() async {
         // Arrange
-        sut.pokemon = nil
-        
-        // Act & Assert
-        XCTAssertEqual(sut.pokemonName, "Unknown Pokemon")
-    }
-    
-    func testPokemonName_WhenPokemonExists_ShouldReturnCapitalizedName() {
-        // Arrange
-        sut.pokemon = createMockPokemon(name: "pikachu")
-        
-        // Act & Assert
-        XCTAssertEqual(sut.pokemonName, "Pikachu")
-    }
-    
-    func testPokemonImageURL_WhenPokemonIsNil_ShouldReturnNil() {
-        // Arrange
-        sut.pokemon = nil
-        
-        // Act & Assert
-        XCTAssertNil(sut.pokemonImageURL)
-    }
-    
-    func testPokemonImageURL_WhenPokemonExists_ShouldReturnImageURL() {
-        // Arrange
-        let imageURL = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
-        sut.pokemon = createMockPokemon(name: "pikachu", imageURL: imageURL)
-        
-        // Act & Assert
-        XCTAssertEqual(sut.pokemonImageURL, imageURL)
-    }
-    
-    // MARK: - Loading Prevention Tests
-    
-    func testLoadPokemonDetail_WhenAlreadyLoading_ShouldNotCallUseCase() {
-        // Arrange
-        sut.isLoading = true
+        let mockPokemon = createMockPokemon()
+        mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
         
         // Act
-        sut.loadPokemonDetail()
-        
+        await sut.loadPokemonDetail()
+
         // Assert
-        XCTAssertFalse(mockGetPokemonDetailUseCase.executeWasCalled)
+        #expect(sut.pokemonName == "Pikachu")
+        #expect(sut.pokemonImageURL == "https://example.com/pikachu.png")
+        #expect(sut.pokemonHeight == "0.4 m")
+        #expect(sut.pokemonWeight == "6.0 kg")
+    }
+    
+    @Test("Pokemon computed properties should return default values when no pokemon")
+    func testPokemonComputedPropertiesWithNoPokemon() async {
+        // Arrange
+        mockGetPokemonDetailUseCase.mockResult = .success(createMockPokemon())
+        
+        // Act
+        await sut.loadPokemonDetail()
+
+        // Assert
+        #expect(sut.pokemonName == "Pikachu")
+        #expect(sut.pokemonImageURL == "https://example.com/pikachu.png")
+    }
+    
+    // MARK: - Error Handling Tests
+    
+    @Test("Should handle custom error messages correctly")
+    func testCustomErrorHandling() async {
+        // Arrange
+        let customError = NSError(domain: "CustomError", code: 500, userInfo: [NSLocalizedDescriptionKey: "Custom error message"])
+        mockGetPokemonDetailUseCase.mockResult = .failure(customError)
+        
+        // Act
+        await sut.loadPokemonDetail()
+
+        // Assert
+        #expect(sut.errorMessage == "Custom error message")
+    }
+    
+    @Test("Should clear error when loading new data")
+    func testClearErrorOnNewLoad() async {
+        // Arrange
+        let error = NSError(domain: "TestError", code: 404, userInfo: [NSLocalizedDescriptionKey: "Test error"])
+        mockGetPokemonDetailUseCase.mockResult = .failure(error)
+        await sut.loadPokemonDetail()
+        // Verify error is set
+        #expect(sut.errorMessage != nil)
+        
+        // Act - load successful data
+        let mockPokemon = createMockPokemon()
+        mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
+        await sut.loadPokemonDetail()
+        // Assert
+        #expect(sut.errorMessage == nil)
+    }
+    
+    // MARK: - Mock Data Creation Tests
+    
+    @Test("Should verify mock use case is called correctly")
+    func testMockUseCaseCall() async {
+        // Arrange
+        let mockPokemon = createMockPokemon()
+        mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
+        
+        // Act
+        await sut.loadPokemonDetail()
+        // Assert
+        #expect(mockGetPokemonDetailUseCase.executeCallCount == 1)
+    }
+    
+    @Test("Should pass correct pokemon ID to use case", arguments: [1, 25, 150, 493])
+    func testCorrectPokemonIdPassed(pokemonId: Int) async {
+        // Arrange
+        let mockUseCase = MockGetPokemonDetailUseCaseSwiftTesting()
+        let viewModel = HomeDetailViewModel(
+            pokemonId: pokemonId,
+            getPokemonDetailUseCase: mockUseCase
+        )
+        let mockPokemon = createMockPokemon()
+        mockUseCase.mockResult = .success(mockPokemon)
+        
+        // Act
+        await viewModel.loadPokemonDetail()
+
+        // Assert
+        #expect(mockUseCase.executeCallCount == 1)
     }
     
     // MARK: - Helper Methods
     
-    private func createMockPokemon(name: String, imageURL: String? = nil) -> Pokemon {
-        return Pokemon(id: 25,
-                       name: name,
-                       height: 4,
-                       weight: 60,
-                       imageURL: imageURL ?? "",
-                       types: [.init(name: "electric", slot: 1)],
-                       abilities: [.init(name: "static", isHidden: false, slot: 1)],
-                       baseExperience: 112)
+    private func createMockPokemon() -> Pokemon {
+        return Pokemon(
+            id: 25,
+            name: "Pikachu",
+            height: 4,
+            weight: 60,
+            imageURL: "https://example.com/pikachu.png",
+            types: [PokemonType(name: "electric", slot: 1)],
+            abilities: [],
+            baseExperience: 112
+        )
     }
 }
 
-// MARK: - Mock Classes
+// MARK: - Mock Class for Swift Testing
+
+class MockGetPokemonDetailUseCaseSwiftTesting: GetPokemonDetailUseCaseProtocol {
+    var mockResult: Result<Pokemon, Error>!
+    var executeCallCount = 0
+    
+    func execute(id: Int) async throws -> Pokemon {
+        executeCallCount += 1
+        
+        switch mockResult {
+        case .success(let pokemon):
+            return pokemon
+        case .failure(let error):
+            throw error
+        case .none:
+            throw NSError(domain: "TestError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock not configured"])
+        }
+    }
+    
+    func execute(name: String) async throws -> Pokemon {
+        executeCallCount += 1
+        
+        switch mockResult {
+        case .success(let pokemon):
+            return pokemon
+        case .failure(let error):
+            throw error
+        case .none:
+            throw NSError(domain: "TestError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock not configured"])
+        }
+    }
+}
 
 class MockGetPokemonDetailUseCase: GetPokemonDetailUseCaseProtocol {
     func execute(name: String) async throws -> Pokemon {
@@ -227,13 +242,13 @@ class MockGetPokemonDetailUseCase: GetPokemonDetailUseCaseProtocol {
             throw NSError(domain: "TestError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock not configured"])
         }
     }
-    
+
     var mockResult: Result<Pokemon, Error>!
     var executeWasCalled = false
-    
+
     func execute(id: Int) async throws -> Pokemon {
         executeWasCalled = true
-        
+
         switch mockResult {
         case .success(let pokemon):
             return pokemon

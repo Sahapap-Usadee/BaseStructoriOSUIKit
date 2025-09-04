@@ -9,11 +9,11 @@ import UIKit
 
 class MainCoordinator: BaseCoordinator {
 
-    private let container: AppDIContainer
+    private let container: MainDIContainer
     private let window: UIWindow
     var onSignOut: (() -> Void)?
 
-    init(window: UIWindow, container: AppDIContainer) {
+    init(window: UIWindow, container: MainDIContainer) {
         self.window = window
         self.container = container
         super.init(navigationController: UINavigationController())
