@@ -78,17 +78,32 @@ func make[ModuleName]FlowCoordinator(navigationController: UINavigationControlle
 - [ ] Create `[ModuleName]ViewModel.swift`
 - [ ] Inherit from `ObservableObject`
 - [ ] Define `@Published` properties for UI state
+- [ ] Create async Input protocol methods
 - [ ] Inject dependencies through initializer
-- [ ] Implement business logic methods
+- [ ] Implement business logic methods using async/await
 - [ ] Handle loading states
 - [ ] Implement error handling
 - [ ] Add data transformation logic
 
 **Required Elements:**
 ```swift
-@Published var isLoading: Bool = false
-@Published var errorMessage: String?
-@Published var showError: Bool = false
+class [ModuleName]ViewModel: ObservableObject {
+    @Published var isLoading: Bool = false
+    @Published var errorMessage: String?
+    @Published var showError: Bool = false
+}
+
+protocol [ModuleName]ViewModelInput {
+    func loadInitialData() async
+    func refreshData() async
+    func performAction() async
+}
+
+protocol [ModuleName]ViewModelOutput {
+    var isLoading: Bool { get }
+    var errorMessage: String? { get }
+    var showError: Bool{ get }
+}
 ```
 
 ### Phase 5: ViewController Implementation
@@ -99,7 +114,7 @@ func make[ModuleName]FlowCoordinator(navigationController: UINavigationControlle
 - [ ] Implement UI components with Auto Layout
 - [ ] Implement `navigationConfiguration`
 - [ ] Bind ViewModel to UI using Combine
-- [ ] Handle user interactions
+- [ ] Handle user interactions with Task wrapper for async calls
 - [ ] Call `configureNavigationBar()` in `viewWillAppear`
 
 **Required Elements:**
@@ -107,6 +122,17 @@ func make[ModuleName]FlowCoordinator(navigationController: UINavigationControlle
 weak var coordinator: [ModuleName]Coordinator?
 private var cancellables = Set<AnyCancellable>()
 var navigationConfiguration: NavigationConfiguration { }
+
+// Example async call in viewDidLoad
+override func viewDidLoad() {
+    super.viewDidLoad()
+    setupUI()
+    bindViewModel()
+    
+    Task { @MainActor in
+        await viewModel.loadInitialData()
+    }
+}
 ```
 
 ### Phase 6: Coordinator Implementation

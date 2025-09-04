@@ -474,9 +474,9 @@ class NewModuleDIContainer {
 ```swift
 // MARK: - New Module ViewModel Input Protocol
 protocol NewModuleViewModelInput {
-    func loadInitialData()
-    func refreshData()
-    func performAction()
+    func loadInitialData() async
+    func refreshData() async
+    func performAction() async
 }
 
 // MARK: - New Module ViewModel Output Protocol
@@ -511,51 +511,39 @@ class NewModuleViewModel: NewModuleViewModelOutput {
 // MARK: - New Module ViewModel Input Implementation
 extension NewModuleViewModel: NewModuleViewModelInput {
     
-    func loadInitialData() {
-        loadData()
+    func loadInitialData() async {
+        await loadData()
     }
     
-    func refreshData() {
-        loadData()
+    func refreshData() async {
+        await loadData()
     }
     
-    func performAction() {
+    func performAction() async {
         // Business logic here
     }
     
     // MARK: - Private Methods
-    private func loadData() {
+    private func loadData() async {
         guard !isLoading else { return }
         
         isLoading = true
         errorMessage = nil
         showError = false
         
-        Task { [weak self] in
-            guard let self = self else { return }
-            
-            do {
-                // Perform async operations here
-                
-                await MainActor.run {
-                    self.title = "Data Loaded"
-                    self.isLoading = false
-                }
-                
-            } catch {
-                await MainActor.run {
-                    self.handleError(error)
-                }
-            }
+        do {
+            // Perform async operations here
+            title = "Data Loaded"
+            isLoading = false
+        } catch {
+            handleError(error)
         }
     }
     
     private func handleError(_ error: Error) {
-        DispatchQueue.main.async { [weak self] in
-            self?.isLoading = false
-            self?.errorMessage = error.localizedDescription
-            self?.showError = true
-        }
+        isLoading = false
+        errorMessage = error.localizedDescription
+        showError = true
     }
 }
 ```
@@ -579,9 +567,10 @@ class NewModuleViewController: BaseViewController<NewModuleViewModel>, Navigatio
         setupUI()
         bindViewModel()
         
-        // Use input protocol
-        let input = viewModel as NewModuleViewModelInput
-        input.loadInitialData()
+        // Use input protocol with @MainActor in Task
+        Task { @MainActor in
+            await viewModel.loadInitialData()
+        }
     }
     
     private func setupUI() {
@@ -619,8 +608,9 @@ class NewModuleViewController: BaseViewController<NewModuleViewModel>, Navigatio
     
     // MARK: - Actions
     @objc private func refreshAction() {
-        let input = viewModel as NewModuleViewModelInput
-        input.refreshData()
+        Task { @MainActor in
+            await viewModel.refreshData()
+        }
     }
 }
 ```

@@ -32,9 +32,9 @@ import Combine
 
 // MARK: - [ModuleName] ViewModel Input Protocol
 protocol [ModuleName]ViewModelInput {
-    func loadInitialData()
-    func refreshData()
-    func performAction()
+    func loadInitialData() async
+    func refreshData() async
+    func performAction() async
 }
 
 // MARK: - [ModuleName] ViewModel Output Protocol
@@ -70,51 +70,39 @@ class [ModuleName]ViewModel: [ModuleName]ViewModelOutput {
 // MARK: - [ModuleName] ViewModel Input Implementation
 extension [ModuleName]ViewModel: [ModuleName]ViewModelInput {
     
-    func loadInitialData() {
-        loadData()
+    func loadInitialData() async {
+        await loadData()
     }
     
-    func refreshData() {
-        loadData()
+    func refreshData() async {
+        await loadData()
     }
     
-    func performAction() {
+    func performAction() async {
         // Business logic here
     }
     
     // MARK: - Private Methods
-    private func loadData() {
+    private func loadData() async {
         guard !isLoading else { return }
         
         isLoading = true
         errorMessage = nil
         showError = false
         
-        Task { [weak self] in
-            guard let self = self else { return }
-            
-            do {
-                // Perform async operations here
-                
-                await MainActor.run {
-                    self.title = "Data Loaded"
-                    self.isLoading = false
-                }
-                
-            } catch {
-                await MainActor.run {
-                    self.handleError(error)
-                }
-            }
+        do {
+            // Perform async operations here
+            title = "Data Loaded"
+            isLoading = false
+        } catch {
+            handleError(error)
         }
     }
     
     private func handleError(_ error: Error) {
-        DispatchQueue.main.async { [weak self] in
-            self?.isLoading = false
-            self?.errorMessage = error.localizedDescription
-            self?.showError = true
-        }
+        isLoading = false
+        errorMessage = error.localizedDescription
+        showError = true
     }
 }
 ```
@@ -154,9 +142,10 @@ class [ModuleName]ViewController: BaseViewController<[ModuleName]ViewModel>, Nav
         setupUI()
         bindViewModel()
         
-        // Use input protocol
-        let input = viewModel as [ModuleName]ViewModelInput
-        input.loadInitialData()
+        // Use input protocol with @MainActor in Task
+        Task { @MainActor in
+            await viewModel.loadInitialData()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -180,24 +169,22 @@ class [ModuleName]ViewController: BaseViewController<[ModuleName]ViewModel>, Nav
     }
     
     private func bindViewModel() {
-        // Use output protocol
-        let output = viewModel as [ModuleName]ViewModelOutput
-        
-        output.$title
+        // Bind viewModel directly
+        viewModel.$title
             .receive(on: DispatchQueue.main)
             .sink { [weak self] title in
                 self?.titleLabel.text = title
             }
             .store(in: &cancellables)
         
-        output.$isLoading
+        viewModel.$isLoading
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isLoading in
                 // Handle loading state
             }
             .store(in: &cancellables)
         
-        output.$showError
+        viewModel.$showError
             .receive(on: DispatchQueue.main)
             .sink { [weak self] showError in
                 if showError, let message = output.errorMessage {
@@ -209,8 +196,9 @@ class [ModuleName]ViewController: BaseViewController<[ModuleName]ViewModel>, Nav
     
     // MARK: - Actions
     @objc private func refreshAction() {
-        let input = viewModel as [ModuleName]ViewModelInput
-        input.refreshData()
+        Task { @MainActor in
+            await viewModel.refreshData()
+        }
     }
 }
 ```
