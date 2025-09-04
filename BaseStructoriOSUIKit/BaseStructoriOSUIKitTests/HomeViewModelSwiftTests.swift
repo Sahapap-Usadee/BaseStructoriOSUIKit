@@ -54,10 +54,7 @@ struct HomeViewModelSwiftTests {
         mockGetPokemonListUseCase.mockResult = .success(expectedPokemonList)
         
         // Act
-        sut.loadInitialData()
-        
-        // Wait for async operation to complete
-        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        await sut.loadInitialData()
         
         // Assert
         #expect(!sut.isLoading)
@@ -76,10 +73,7 @@ struct HomeViewModelSwiftTests {
         mockGetPokemonListUseCase.mockResult = .failure(expectedError)
         
         // Act
-        sut.loadInitialData()
-        
-        // Wait for async operation to complete
-        try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+        await sut.loadInitialData()
         
         // Assert
         #expect(!sut.isLoading)
@@ -100,8 +94,7 @@ struct HomeViewModelSwiftTests {
             results: [PokemonListItem(name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/")]
         )
         mockGetPokemonListUseCase.mockResult = .success(initialPokemonList)
-        sut.loadInitialData()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadInitialData()
         
         // Arrange - Set more data
         let morePokemonList = PokemonList(
@@ -113,9 +106,8 @@ struct HomeViewModelSwiftTests {
         mockGetPokemonListUseCase.mockResult = .success(morePokemonList)
         
         // Act
-        sut.loadMoreData()
-        try? await Task.sleep(nanoseconds: 100_000_000)
-        
+        await sut.loadMoreData()
+
         // Assert
         #expect(!sut.isLoading)
         #expect(sut.pokemonList.count == 2)
@@ -137,8 +129,7 @@ struct HomeViewModelSwiftTests {
         mockGetPokemonListUseCase.mockResult = .success(pokemonList)
         
         // Act
-        sut.loadInitialData()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadInitialData()
 
         // Assert
         #expect(!sut.hasMoreData)
@@ -156,8 +147,7 @@ struct HomeViewModelSwiftTests {
         mockGetPokemonListUseCase.mockResult = .success(pokemonList)
         
         // Act
-        sut.loadInitialData()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadInitialData()
 
         // Assert
         #expect(sut.hasMoreData)
@@ -174,5 +164,32 @@ struct HomeViewModelSwiftTests {
                 PokemonListItem(name: "pokemon\($0)", url: "https://pokeapi.co/api/v2/pokemon/\($0)/") 
             }
         )
+    }
+}
+
+class MockUserManager: UserManagerProtocol {
+
+    func updatecurrentUser(_ userData: UserData) {}
+
+    func getUserData() -> UserData? {
+        return.init(id: "", username: "", email: "", fullName: "", profileImageURL: "")
+    }
+}
+
+class MockGetPokemonListUseCase: GetPokemonListUseCaseProtocol {
+    var mockResult: Result<PokemonList, Error>!
+    var executeWasCalled = false
+
+    func execute(limit: Int, offset: Int) async throws -> PokemonList {
+        executeWasCalled = true
+
+        switch mockResult {
+        case .success(let response):
+            return response
+        case .failure(let error):
+            throw error
+        case .none:
+            throw NSError(domain: "TestError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock not configured"])
+        }
     }
 }
