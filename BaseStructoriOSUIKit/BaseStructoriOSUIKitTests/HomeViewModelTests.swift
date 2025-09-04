@@ -12,16 +12,16 @@ import Combine
 class HomeViewModelTests: XCTestCase {
     
     var sut: HomeViewModel!
-    var mockUserService: MockUserService!
+    var mockuserManager: MockUserManager!
     var mockGetPokemonListUseCase: MockGetPokemonListUseCase!
     var cancellables: Set<AnyCancellable>!
     
     override func setUp() {
         super.setUp()
-        mockUserService = MockUserService()
+        mockuserManager = MockUserManager()
         mockGetPokemonListUseCase = MockGetPokemonListUseCase()
         sut = HomeViewModel(
-            userService: mockUserService,
+            userManager: mockuserManager,
             getPokemonListUseCase: mockGetPokemonListUseCase
         )
         cancellables = Set<AnyCancellable>()
@@ -29,7 +29,7 @@ class HomeViewModelTests: XCTestCase {
     
     override func tearDown() {
         sut = nil
-        mockUserService = nil
+        mockuserManager = nil
         mockGetPokemonListUseCase = nil
         cancellables = nil
         super.tearDown()
@@ -238,8 +238,8 @@ class HomeViewModelTests: XCTestCase {
 
 // MARK: - Mock Classes
 
-class MockUserService: UserServiceProtocol {
-    
+class MockUserManager: UserManagerProtocol {
+
     func updatecurrentUser(_ userData: UserData) {}
 
     func getUserData() -> UserData? {
