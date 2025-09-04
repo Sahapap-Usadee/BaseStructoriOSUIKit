@@ -8,10 +8,10 @@
 import UIKit
 
 // MARK: - Base View Controller
-class BaseViewController<T>: UIViewController {
-    public var viewModel: T
+class BaseViewController<VM: ObservableObject>: UIViewController {
+    public var viewModel: VM
 
-    public init(viewModel: T, bundle: Bundle? = nil) {
+    public init(viewModel: VM, bundle: Bundle? = nil) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: bundle)
     }
