@@ -307,17 +307,3 @@ class PokemonCell: UITableViewCell {
         pokemonImageView.loadPokemonImage(by: id)
     }
 }
-
-// MARK: - Base View Controller
-class BaseViewController<T>: UIViewController {
-    public var viewModel: T
-
-    public init(viewModel: T, bundle: Bundle? = nil) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: bundle)
-    }
-
-    required public init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
