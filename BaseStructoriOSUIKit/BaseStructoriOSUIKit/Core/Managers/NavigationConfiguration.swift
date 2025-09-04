@@ -7,6 +7,15 @@
 
 import UIKit
 
+struct NavigationConfiguration {
+    var title: String?
+    var style: NavigationBarStyle = .default
+    var rightButtonConfig: (image: UIImage?, action: (() -> Void))?
+    var leftButtonConfig: (image: UIImage?, action: (() -> Void))?
+    var hideBackButton: Bool = false
+    var largeTitleMode: UINavigationItem.LargeTitleDisplayMode = .automatic
+}
+
 // MARK: - Navigation Configurable Protocol
 protocol NavigationConfigurable: AnyObject {
     func configureNavigationBar()
