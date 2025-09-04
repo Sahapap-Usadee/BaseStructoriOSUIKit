@@ -1,5 +1,5 @@
 //
-//  EnhancedNetworkService.swift
+//  NetworkService.swift
 //  BaseStructoriOSUIKit
 //
 //  Created by sahapap on 2/9/2568 BE.
@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 // MARK: - Enhanced Network Service Protocol
-protocol EnhancedNetworkServiceProtocol {
+protocol NetworkServiceProtocol {
     func request<T: Codable>(
         endpoint: String,
         method: HTTPMethod,
@@ -67,7 +67,7 @@ enum EnhancedNetworkError: Error, LocalizedError {
 }
 
 // MARK: - Enhanced Network Service Implementation
-class EnhancedNetworkService: EnhancedNetworkServiceProtocol {
+class NetworkService: NetworkServiceProtocol {
     private let session: URLSession
     private let sessionManager: SessionManagerProtocol
     private let baseURL: String

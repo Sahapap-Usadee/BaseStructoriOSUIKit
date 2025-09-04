@@ -8,7 +8,7 @@
 import UIKit
 
 protocol DIContainer {
-    func makeNetworkService() -> EnhancedNetworkServiceProtocol
+    func makeNetworkService() -> NetworkServiceProtocol
     func makeSessionManager() -> SessionManagerProtocol
     func makeUserManager() -> UserManagerProtocol
 
@@ -27,7 +27,7 @@ class AppDIContainer {
     private init() {}
 
     private lazy var sessionManager: SessionManagerProtocol = SessionManager()
-    private lazy var networkService: EnhancedNetworkServiceProtocol = EnhancedNetworkService(sessionManager: sessionManager)
+    private lazy var networkService: NetworkServiceProtocol = NetworkService(sessionManager: sessionManager)
     private lazy var userManager: UserManagerProtocol = UserManager()
 
     private lazy var homeDIContainer: HomeDIContainer = HomeDIContainer(appDIContainer: self)
@@ -37,7 +37,7 @@ class AppDIContainer {
 }
 
 extension AppDIContainer: DIContainer {
-    func makeNetworkService() -> EnhancedNetworkServiceProtocol {
+    func makeNetworkService() -> NetworkServiceProtocol {
         return networkService
     }
 
