@@ -92,11 +92,3 @@ class ListViewModel: ObservableObject {
         ]
     }
 }
-
-// MARK: - List Item Model
-struct ListItem: Identifiable, Equatable {
-    let id: Int
-    let title: String
-    let subtitle: String
-    var isSelected: Bool
-}

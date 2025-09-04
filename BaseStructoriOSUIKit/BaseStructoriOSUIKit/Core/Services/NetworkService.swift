@@ -31,7 +31,7 @@ enum HTTPMethod: String {
 }
 
 // MARK: - Enhanced Network Errors
-enum EnhancedNetworkError: Error, LocalizedError {
+enum NetworkError: Error, LocalizedError {
     case invalidURL
     case noData
     case decodingError(String)
@@ -98,7 +98,7 @@ class NetworkService: NetworkServiceProtocol {
         // Build URL
         let urlString = endpoint.hasPrefix("http") ? endpoint : baseURL + endpoint
         guard let url = URL(string: urlString) else {
-            throw EnhancedNetworkError.invalidURL
+            throw NetworkError.invalidURL
         }
         
         // Create request
@@ -124,7 +124,7 @@ class NetworkService: NetworkServiceProtocol {
             let (data, response) = try await session.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                throw EnhancedNetworkError.unknown(URLError(.badServerResponse))
+                throw NetworkError.unknown(URLError(.badServerResponse))
             }
             
             // Handle response status codes
@@ -135,12 +135,12 @@ class NetworkService: NetworkServiceProtocol {
             case 401:
                 // Unauthorized - handle session expiry
                 sessionManager.handleUnauthorized()
-                throw EnhancedNetworkError.unauthorized
+                throw NetworkError.unauthorized
             case 403:
-                throw EnhancedNetworkError.unauthorized
+                throw NetworkError.unauthorized
             default:
                 let errorMessage = String(data: data, encoding: .utf8)
-                throw EnhancedNetworkError.serverError(httpResponse.statusCode, errorMessage)
+                throw NetworkError.serverError(httpResponse.statusCode, errorMessage)
             }
             
             // Decode response
@@ -149,28 +149,28 @@ class NetworkService: NetworkServiceProtocol {
                 decoder.dateDecodingStrategy = .iso8601
                 return try decoder.decode(type, from: data)
             } catch let decodingError {
-                throw EnhancedNetworkError.decodingError(decodingError.localizedDescription)
+                throw NetworkError.decodingError(decodingError.localizedDescription)
             }
             
-        } catch let error as EnhancedNetworkError {
+        } catch let error as NetworkError {
             throw error
         } catch let urlError as URLError {
             switch urlError.code {
             case .notConnectedToInternet, .networkConnectionLost:
-                throw EnhancedNetworkError.noInternetConnection
+                throw NetworkError.noInternetConnection
             case .timedOut:
-                throw EnhancedNetworkError.timeout
+                throw NetworkError.timeout
             default:
-                throw EnhancedNetworkError.unknown(urlError)
+                throw NetworkError.unknown(urlError)
             }
         } catch {
-            throw EnhancedNetworkError.unknown(error)
+            throw NetworkError.unknown(error)
         }
     }
     
     func downloadImage(from url: String) async throws -> Data {
         guard let imageURL = URL(string: url) else {
-            throw EnhancedNetworkError.invalidURL
+            throw NetworkError.invalidURL
         }
         
         do {
@@ -178,21 +178,21 @@ class NetworkService: NetworkServiceProtocol {
             
             guard let httpResponse = response as? HTTPURLResponse,
                   200...299 ~= httpResponse.statusCode else {
-                throw EnhancedNetworkError.serverError(0, "Failed to download image")
+                throw NetworkError.serverError(0, "Failed to download image")
             }
             
             return data
         } catch let error as URLError {
             switch error.code {
             case .notConnectedToInternet, .networkConnectionLost:
-                throw EnhancedNetworkError.noInternetConnection
+                throw NetworkError.noInternetConnection
             case .timedOut:
-                throw EnhancedNetworkError.timeout
+                throw NetworkError.timeout
             default:
-                throw EnhancedNetworkError.unknown(error)
+                throw NetworkError.unknown(error)
             }
         } catch {
-            throw EnhancedNetworkError.unknown(error)
+            throw NetworkError.unknown(error)
         }
     }
 }
