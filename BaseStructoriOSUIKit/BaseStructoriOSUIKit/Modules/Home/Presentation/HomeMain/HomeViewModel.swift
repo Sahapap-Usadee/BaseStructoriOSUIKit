@@ -10,9 +10,9 @@ import Combine
 
 // MARK: - Home ViewModel Input Protocol
 protocol HomeViewModelInput {
-    func loadInitialData()
-    func refreshData()
-    func loadMoreData()
+    func loadInitialData() async
+    func refreshData() async
+    func loadMoreData() async
 }
 
 // MARK: - Home ViewModel Output Protocol
@@ -58,64 +58,54 @@ class HomeViewModel: HomeViewModelOutput {
 // MARK: - Home ViewModel Input Implementation
 extension HomeViewModel: HomeViewModelInput {
     
-    func loadInitialData() {
-        loadPokemonList()
+    func loadInitialData() async {
+        await loadPokemonList()
     }
     
-    func refreshData() {
+    func refreshData() async {
         currentOffset = 0
         pokemonList.removeAll()
         hasMoreData = true
-        loadPokemonList()
+        await loadPokemonList()
     }
     
-    func loadMoreData() {
+    func loadMoreData() async {
         guard !isLoading && hasMoreData else { return }
-        loadPokemonList()
+        await loadPokemonList()
     }
     
     // MARK: - Private Methods
-    private func loadPokemonList() {
+    private func loadPokemonList() async {
         guard !isLoading else { return }
         
         isLoading = true
         errorMessage = nil
         showError = false
         
-        Task { [weak self] in
-            guard let self = self else { return }
+        do {
+            let response = try await getPokemonListUseCase.execute(
+                limit: limit,
+                offset: currentOffset
+            )
             
-            do {
-                let response = try await self.getPokemonListUseCase.execute(
-                    limit: self.limit,
-                    offset: self.currentOffset
-                )
-                
-                await MainActor.run {
-                    if self.currentOffset == 0 {
-                        self.pokemonList = response.results
-                    } else {
-                        self.pokemonList.append(contentsOf: response.results)
-                    }
-                    
-                    self.currentOffset += self.limit
-                    self.hasMoreData = response.next != nil
-                    self.isLoading = false
-                }
-                
-            } catch {
-                await MainActor.run {
-                    self.handleError(error)
-                }
+            if currentOffset == 0 {
+                pokemonList = response.results
+            } else {
+                pokemonList.append(contentsOf: response.results)
             }
+            
+            currentOffset += limit
+            hasMoreData = response.next != nil
+            isLoading = false
+            
+        } catch {
+            handleError(error)
         }
     }
     
     private func handleError(_ error: Error) {
-        DispatchQueue.main.async { [weak self] in
-            self?.isLoading = false
-            self?.errorMessage = error.localizedDescription
-            self?.showError = true
-        }
+        isLoading = false
+        errorMessage = error.localizedDescription
+        showError = true
     }
 }

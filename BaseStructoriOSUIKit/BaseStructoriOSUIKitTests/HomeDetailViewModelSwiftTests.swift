@@ -39,8 +39,7 @@ class HomeDetailViewModelSwiftTestsFixed {
         mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
         
         // Act
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
 
         // Assert
         #expect(sut.pokemon != nil)
@@ -56,8 +55,7 @@ class HomeDetailViewModelSwiftTestsFixed {
         mockGetPokemonDetailUseCase.mockResult = .failure(expectedError)
         
         // Act
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
 
         // Assert
         #expect(sut.pokemon == nil)
@@ -72,8 +70,7 @@ class HomeDetailViewModelSwiftTestsFixed {
         mockGetPokemonDetailUseCase.mockResult = .failure(expectedError)
         
         // Act
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
 
         // Assert
         #expect(sut.pokemon == nil)
@@ -90,8 +87,7 @@ class HomeDetailViewModelSwiftTestsFixed {
         mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
         
         // Act
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
 
         // Assert
         #expect(sut.pokemonName == "Pikachu")
@@ -106,8 +102,7 @@ class HomeDetailViewModelSwiftTestsFixed {
         mockGetPokemonDetailUseCase.mockResult = .success(createMockPokemon())
         
         // Act
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
 
         // Assert
         #expect(sut.pokemonName == "Pikachu")
@@ -123,8 +118,7 @@ class HomeDetailViewModelSwiftTestsFixed {
         mockGetPokemonDetailUseCase.mockResult = .failure(customError)
         
         // Act
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
 
         // Assert
         #expect(sut.errorMessage == "Custom error message")
@@ -135,16 +129,14 @@ class HomeDetailViewModelSwiftTestsFixed {
         // Arrange
         let error = NSError(domain: "TestError", code: 404, userInfo: [NSLocalizedDescriptionKey: "Test error"])
         mockGetPokemonDetailUseCase.mockResult = .failure(error)
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
         // Verify error is set
         #expect(sut.errorMessage != nil)
         
         // Act - load successful data
         let mockPokemon = createMockPokemon()
         mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
         // Assert
         #expect(sut.errorMessage == nil)
     }
@@ -158,8 +150,7 @@ class HomeDetailViewModelSwiftTestsFixed {
         mockGetPokemonDetailUseCase.mockResult = .success(mockPokemon)
         
         // Act
-        sut.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await sut.loadPokemonDetail()
         // Assert
         #expect(mockGetPokemonDetailUseCase.executeCallCount == 1)
     }
@@ -176,8 +167,7 @@ class HomeDetailViewModelSwiftTestsFixed {
         mockUseCase.mockResult = .success(mockPokemon)
         
         // Act
-        viewModel.loadPokemonDetail()
-        try? await Task.sleep(nanoseconds: 100_000_000)
+        await viewModel.loadPokemonDetail()
 
         // Assert
         #expect(mockUseCase.executeCallCount == 1)
@@ -221,6 +211,37 @@ class MockGetPokemonDetailUseCaseSwiftTesting: GetPokemonDetailUseCaseProtocol {
     func execute(name: String) async throws -> Pokemon {
         executeCallCount += 1
         
+        switch mockResult {
+        case .success(let pokemon):
+            return pokemon
+        case .failure(let error):
+            throw error
+        case .none:
+            throw NSError(domain: "TestError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock not configured"])
+        }
+    }
+}
+
+class MockGetPokemonDetailUseCase: GetPokemonDetailUseCaseProtocol {
+    func execute(name: String) async throws -> Pokemon {
+        executeWasCalled = true
+
+        switch mockResult {
+        case .success(let pokemon):
+            return pokemon
+        case .failure(let error):
+            throw error
+        case .none:
+            throw NSError(domain: "TestError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock not configured"])
+        }
+    }
+
+    var mockResult: Result<Pokemon, Error>!
+    var executeWasCalled = false
+
+    func execute(id: Int) async throws -> Pokemon {
+        executeWasCalled = true
+
         switch mockResult {
         case .success(let pokemon):
             return pokemon

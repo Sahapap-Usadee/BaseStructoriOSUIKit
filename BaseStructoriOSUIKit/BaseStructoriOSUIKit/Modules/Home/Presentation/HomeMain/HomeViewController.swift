@@ -75,7 +75,9 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
         bindViewModel()
         
         // Load initial data
-        viewModel.loadInitialData()
+        Task {
+            await viewModel.loadInitialData()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -175,7 +177,9 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     }
     
     @objc private func refreshData() {
-        viewModel.refreshData()
+        Task {
+            await viewModel.refreshData()
+        }
     }
     
     private func rightButtonTapped() {
@@ -201,7 +205,9 @@ extension HomeViewController: UITableViewDataSource {
         
         // Load more data when near the end
         if indexPath.row == viewModel.pokemonList.count - 3 {
-            viewModel.loadMoreData()
+            Task {
+                await viewModel.loadMoreData()
+            }
         }
         
         return cell

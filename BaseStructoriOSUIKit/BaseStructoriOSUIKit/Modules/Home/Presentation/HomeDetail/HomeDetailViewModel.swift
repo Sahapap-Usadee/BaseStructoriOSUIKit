@@ -10,8 +10,8 @@ import Combine
 
 // MARK: - HomeDetail ViewModel Input Protocol
 protocol HomeDetailViewModelInput {
-    func loadPokemonDetail()
-    func refreshData()
+    func loadPokemonDetail() async
+    func refreshData() async
 }
 
 // MARK: - HomeDetail ViewModel Output Protocol
@@ -96,43 +96,30 @@ class HomeDetailViewModel: HomeDetailViewModelOutput {
 // MARK: - HomeDetail ViewModel Input Implementation
 extension HomeDetailViewModel: HomeDetailViewModelInput {
     
-    func loadPokemonDetail() {
+    func loadPokemonDetail() async {
         guard !isLoading else { return }
         
         isLoading = true
         errorMessage = nil
         showError = false
         
-        Task { [weak self] in
-            guard let self = self else { return }
-            
-            do {
-                let pokemonDetail = try await self.getPokemonDetailUseCase.execute(id: self.pokemonId)
-                
-                await MainActor.run {
-                    self.pokemon = pokemonDetail
-                    self.isLoading = false
-                }
-                
-            } catch {
-                await MainActor.run {
-                    self.handleError(error)
-                }
-            }
+        do {
+            let pokemonDetail = try await getPokemonDetailUseCase.execute(id: pokemonId)
+            pokemon = pokemonDetail
+            isLoading = false
+        } catch {
+            handleError(error)
         }
     }
     
-    func refreshData() {
-        loadPokemonDetail()
+    func refreshData() async {
+        await loadPokemonDetail()
     }
     
     // MARK: - Private Methods
     private func handleError(_ error: Error) {
-        DispatchQueue.main.async { [weak self] in
-            self?.isLoading = false
-            
-            self?.errorMessage = error.localizedDescription
-            self?.showError = true
-        }
+        isLoading = false
+        errorMessage = error.localizedDescription
+        showError = true
     }
 }
