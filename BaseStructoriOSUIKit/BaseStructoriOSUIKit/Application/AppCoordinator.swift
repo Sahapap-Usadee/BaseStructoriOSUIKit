@@ -9,7 +9,7 @@ import UIKit
 
 class AppCoordinator: BaseCoordinator {
     private let window: UIWindow
-    private let container: AppDIContainer
+    private let container: DIContainer
 
     // MARK: - App State Management
     private enum AppState {
@@ -20,7 +20,7 @@ class AppCoordinator: BaseCoordinator {
     
     private var currentState: AppState = .loading
     
-    init(window: UIWindow, container: AppDIContainer) {
+    init(window: UIWindow, container: DIContainer) {
         self.window = window
         self.container = container
         super.init(navigationController: UINavigationController())

@@ -7,17 +7,13 @@
 
 import UIKit
 
-protocol ServiceFactory {
+protocol DIContainer {
     func makeNetworkService() -> EnhancedNetworkServiceProtocol
     func makeSessionManager() -> SessionManagerProtocol
     func makeUserManager() -> UserManagerProtocol
-}
 
-protocol CoordinatorFactory {
     func makeAppCoordinator(window: UIWindow) -> AppCoordinator
-}
 
-protocol ModuleContainerFactory {
     func makeHomeDIContainer() -> HomeDIContainer
     func makeListDIContainer() -> ListDIContainer
     func makeSettingsDIContainer() -> SettingsDIContainer
@@ -40,9 +36,7 @@ class AppDIContainer {
     private lazy var mainDIContainer: MainDIContainer = MainDIContainer(appDIContainer: self)
 }
 
-extension AppDIContainer: ServiceFactory {
-
-    // MARK: Core Services
+extension AppDIContainer: DIContainer {
     func makeNetworkService() -> EnhancedNetworkServiceProtocol {
         return networkService
     }
@@ -54,11 +48,7 @@ extension AppDIContainer: ServiceFactory {
     func makeUserManager() -> UserManagerProtocol {
         return userManager
     }
-}
 
-extension AppDIContainer: ModuleContainerFactory {
-
-    // MARK: Module Containers with Dependency Validation
     func makeHomeDIContainer() -> HomeDIContainer {
         return homeDIContainer
     }
@@ -74,9 +64,7 @@ extension AppDIContainer: ModuleContainerFactory {
     func makeMainDIContainer() -> MainDIContainer {
         return mainDIContainer
     }
-}
 
-extension AppDIContainer: CoordinatorFactory {
     func makeAppCoordinator(window: UIWindow) -> AppCoordinator {
         return AppCoordinator(window: window, container: self)
     }
