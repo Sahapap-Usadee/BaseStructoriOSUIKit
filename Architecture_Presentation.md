@@ -61,15 +61,15 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                         Domain Layer                            │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐   │
-│  │    Entities     │ │   Use Cases     │ │  Repositories   │   │
+│  │    Use Cases    │ │    Entities     │ │  Repositories   │   │
 │  │                 │ │                 │ │  (Protocols)    │   │
 │  └─────────────────┘ └─────────────────┘ └─────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────┐
 │                          Data Layer                             │
 │  ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐   │
-│  │  Data Sources   │ │  Repositories   │ │      DTOs       │   │
-│  │                 │ │ (Implementation)│ │                 │   │
+│  │  Repositories   │ │  Data Sources   │ │      DTOs       │   │
+│  │(Implementation) │ │                 │ │                 │   │
 │  └─────────────────┘ └─────────────────┘ └─────────────────┘   │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -88,11 +88,10 @@ BaseStructoriOSUIKit/
 │   ├── Base/                   # Base classes
 │   │   ├── BaseCoordinator.swift
 │   │   └── BaseViewController.swift
-│   ├── DI/                     # Dependency Injection
+│   ├── DI/                     # Main Dependency Injection
 │   │   └── DIContainer.swift
 │   ├── Extensions/             # Swift extensions
-│   ├── Managers/               # Shared managers
-│   │   ├── NavigationConfiguration.swift
+│   ├── Managers/               # ex. Shared managers
 │   │   ├── NavigationManager.swift
 │   │   ├── SessionManager.swift
 │   │   └── UserManager.swift
