@@ -8,11 +8,10 @@
 import UIKit
 import Combine
 
-class LoadingViewController: UIViewController, NavigationConfigurable {
+class LoadingViewController: BaseViewController<LoadingViewModel>, NavigationConfigurable {
     
     // MARK: - Properties
     weak var coordinator: LoadingCoordinator?
-    private let viewModel = LoadingViewModel()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -175,5 +174,5 @@ class LoadingViewController: UIViewController, NavigationConfigurable {
 }
 
 #Preview {
-    LoadingViewController()
+    LoadingViewController(viewModel: .init())
 }

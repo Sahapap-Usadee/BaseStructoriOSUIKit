@@ -62,7 +62,8 @@ class AppCoordinator: BaseCoordinator {
     }
     
     private func showLoadingScreen() {
-        let loadingCoordinator = LoadingCoordinator(navigationController: navigationController)
+        let loadingDIContainer = container.makeLoadingDIContainer()
+        let loadingCoordinator = loadingDIContainer.makeLoadingFlowCoordinator(navigationController: navigationController)
         loadingCoordinator.onFinishedLoading = { [weak self] in
             self?.transitionTo(.main)
         }
@@ -87,8 +88,7 @@ class AppCoordinator: BaseCoordinator {
         
         addChildCoordinator(mainCoordinator)
         print("🔍 AppCoordinator created MainCoordinator: \(mainCoordinator)")
-        
-        // MainCoordinator จะจัดการ window เอง
+
         mainCoordinator.start()
         print("🔍 AppCoordinator called mainCoordinator.start() - MainCoordinator handles window internally")
     }
@@ -111,8 +111,7 @@ class AppCoordinator: BaseCoordinator {
         }
         
         alert.addAction(okAction)
-        
-        // Find top view controller to present alert
+
         if let topViewController = getTopViewController() {
             topViewController.present(alert, animated: true)
         }

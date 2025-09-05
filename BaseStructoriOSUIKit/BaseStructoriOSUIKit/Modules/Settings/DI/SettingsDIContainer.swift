@@ -14,6 +14,10 @@ protocol SettingsFactoryProtocol {
     func makeLocalizationTestViewController() -> LocalizationTestViewController
 }
 
+protocol SettingsCoordinatorFactory {
+    func makeSettingsFlowCoordinator(navigationController: UINavigationController) -> SettingsCoordinator
+}
+
 // MARK: - Settings DI Container
 class SettingsDIContainer {
     
@@ -22,7 +26,10 @@ class SettingsDIContainer {
     init(appDIContainer: AppDIContainer) {
         self.appDIContainer = appDIContainer
     }
-    
+}
+
+// MARK: - Coordinator Factory
+extension SettingsDIContainer: SettingsCoordinatorFactory {
     func makeSettingsFlowCoordinator(navigationController: UINavigationController) -> SettingsCoordinator {
         return SettingsCoordinator(navigationController: navigationController, container: self)
     }
