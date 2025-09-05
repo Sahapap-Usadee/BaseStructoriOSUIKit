@@ -743,16 +743,9 @@ extension NewModuleViewModel: NewModuleViewModelInput {
 #### Step 3: Create ViewController
 
 ```swift
-class NewModuleViewController: BaseViewController<NewModuleViewModel>, NavigationConfigurable {
+class NewModuleViewController: BaseViewController<NewModuleViewModel> {
     weak var coordinator: NewModuleCoordinator?
     private var cancellables = Set<AnyCancellable>()
-    
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .title("New Module")
-            .style(.default)
-            .build()
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
