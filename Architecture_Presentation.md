@@ -434,7 +434,148 @@ class HomeCoordinator: BaseCoordinator {
 
 ### Code Style Standards
 
+#### ✅ Naming Conventions
 ```swift
+// Classes: PascalCase
+class HomeViewController: BaseViewController<HomeViewModel> { }
+class UserManager: UserManagerProtocol { }
+
+// Properties & Variables: camelCase
+private let networkService: NetworkServiceProtocol
+var isLoading: Bool = false
+@Published var pokemonList: [Pokemon] = []
+
+// Constants: camelCase or UPPER_CASE for static
+let maxRetryCount = 3
+static let DEFAULT_TIMEOUT: TimeInterval = 30.0
+
+// Functions: camelCase with descriptive names
+func loadPokemonList() async { }
+func showDetailScreen(pokemonId: Int) { }
+func handleError(_ error: Error) { }
+
+// Protocols: PascalCase with "Protocol" suffix
+protocol NetworkServiceProtocol { }
+protocol HomeViewModelInput { }
+protocol HomeViewModelOutput: ObservableObject { }
+```
+
+#### ✅ Code Organization
+```swift
+// MARK: - Protocol conformance grouping
+class HomeViewController: BaseViewController<HomeViewModel> {
+    
+    // MARK: - UI Components
+    private lazy var tableView: UITableView = { }()
+    private lazy var refreshControl: UIRefreshControl = { }()
+    
+    // MARK: - Properties
+    weak var coordinator: HomeCoordinator?
+    private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Lifecycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupUI()
+        bindViewModel()
+    }
+    
+    // MARK: - Setup Methods
+    private func setupUI() { }
+    private func bindViewModel() { }
+    
+    // MARK: - Actions
+    @objc private func refreshAction() { }
+}
+
+// MARK: - Protocol Conformance
+extension HomeViewController: UITableViewDataSource {
+    // Implementation here
+}
+```
+
+#### ✅ Dependency Injection Style
+```swift
+// Constructor injection (Preferred)
+class HomeViewModel {
+    private let userManager: UserManagerProtocol
+    private let getPokemonListUseCase: GetPokemonListUseCaseProtocol
+    
+    init(
+        userManager: UserManagerProtocol,
+        getPokemonListUseCase: GetPokemonListUseCaseProtocol
+    ) {
+        self.userManager = userManager
+        self.getPokemonListUseCase = getPokemonListUseCase
+    }
+}
+```
+
+#### ✅ Async/Await Pattern
+```swift
+// Use async/await for asynchronous operations
+func loadData() async {
+    guard !isLoading else { return }
+    
+    isLoading = true
+    defer { isLoading = false }
+    
+    do {
+        let result = try await useCase.execute()
+        // Handle success
+    } catch {
+        handleError(error)
+    }
+}
+
+// UI updates with @MainActor
+Task { @MainActor in
+    await viewModel.loadInitialData()
+}
+```
+
+#### ✅ Memory Management
+```swift
+// Weak references for coordinators
+weak var coordinator: HomeCoordinator?
+
+// Proper Combine cancellables
+private var cancellables = Set<AnyCancellable>()
+
+// Weak self in closures
+.sink { [weak self] value in
+    self?.handleValue(value)
+}
+.store(in: &cancellables)
+```
+
+#### ✅ Error Handling
+```swift
+// Structured error handling
+enum NetworkError: LocalizedError {
+    case noConnection
+    case serverError(Int)
+    case decodingError
+    
+    var errorDescription: String? {
+        switch self {
+        case .noConnection:
+            return "No internet connection"
+        case .serverError(let code):
+            return "Server error: \(code)"
+        case .decodingError:
+            return "Data parsing error"
+        }
+    }
+}
+
+// Error handling in ViewModels
+private func handleError(_ error: Error) {
+    isLoading = false
+    errorMessage = error.localizedDescription
+    showError = true
+}
+```
 
 ---
 
@@ -442,8 +583,22 @@ class HomeCoordinator: BaseCoordinator {
 
 ### 1. Creating a New Module
 
-#### Step 1: Create DI Container
+#### Step 1: Create DI Container (Complete Example)
+
 ```swift
+// MARK: - Factory Protocols
+protocol NewModuleFactoryProtocol {
+    func makeNewModuleViewModel() -> NewModuleViewModel
+    func makeNewModuleViewController() -> NewModuleViewController
+    func makeNewModuleDetailViewModel(itemId: Int) -> NewModuleDetailViewModel
+    func makeNewModuleDetailViewController(itemId: Int) -> NewModuleDetailViewController
+}
+
+protocol NewModuleCoordinatorFactory {
+    func makeNewModuleFlowCoordinator(navigationController: UINavigationController) -> NewModuleCoordinator
+}
+
+// MARK: - DI Container
 class NewModuleDIContainer {
     private let appDIContainer: AppDIContainer
     
@@ -451,9 +606,44 @@ class NewModuleDIContainer {
         self.appDIContainer = appDIContainer
     }
     
+    // MARK: - Use Cases (if needed)
+    private lazy var getNewModuleDataUseCase: GetNewModuleDataUseCaseProtocol = {
+        // Create use case with repository
+        return GetNewModuleDataUseCase(repository: newModuleRepository)
+    }()
+    
+    // MARK: - Repository (if needed)
+    private lazy var newModuleRepository: NewModuleRepositoryProtocol = {
+        // Create repository with data source
+        return NewModuleRepositoryImpl(
+            remoteDataSource: newModuleRemoteDataSource,
+            localDataSource: newModuleLocalDataSource
+        )
+    }()
+    
+    // MARK: - Data Sources (if needed)
+    private lazy var newModuleRemoteDataSource: NewModuleRemoteDataSourceProtocol = {
+        return NewModuleRemoteDataSource(networkService: appDIContainer.makeNetworkService())
+    }()
+    
+    private lazy var newModuleLocalDataSource: NewModuleLocalDataSourceProtocol = {
+        return NewModuleLocalDataSource()
+    }()
+}
+
+// MARK: - Coordinator Factory Implementation
+extension NewModuleDIContainer: NewModuleCoordinatorFactory {
+    func makeNewModuleFlowCoordinator(navigationController: UINavigationController) -> NewModuleCoordinator {
+        return NewModuleCoordinator(navigationController: navigationController, container: self)
+    }
+}
+
+// MARK: - Factory Implementation
+extension NewModuleDIContainer: NewModuleFactoryProtocol {
     func makeNewModuleViewModel() -> NewModuleViewModel {
         return NewModuleViewModel(
-            userManager: appDIContainer.makeUserManager()
+            userManager: appDIContainer.makeUserManager(),
+            getNewModuleDataUseCase: getNewModuleDataUseCase
         )
     }
     
@@ -462,8 +652,16 @@ class NewModuleDIContainer {
         return NewModuleViewController(viewModel: viewModel)
     }
     
-    func makeNewModuleCoordinator(navigationController: UINavigationController) -> NewModuleCoordinator {
-        return NewModuleCoordinator(navigationController: navigationController, container: self)
+    func makeNewModuleDetailViewModel(itemId: Int) -> NewModuleDetailViewModel {
+        return NewModuleDetailViewModel(
+            itemId: itemId,
+            getNewModuleDataUseCase: getNewModuleDataUseCase
+        )
+    }
+    
+    func makeNewModuleDetailViewController(itemId: Int) -> NewModuleDetailViewController {
+        let viewModel = makeNewModuleDetailViewModel(itemId: itemId)
+        return NewModuleDetailViewController(viewModel: viewModel)
     }
 }
 ```
@@ -614,7 +812,7 @@ class NewModuleViewController: BaseViewController<NewModuleViewModel>, Navigatio
 }
 ```
 
-#### Step 4: Create Coordinator
+#### Step 4: Create Coordinator (Complete Example)
 
 ```swift
 class NewModuleCoordinator: BaseCoordinator {
@@ -628,17 +826,149 @@ class NewModuleCoordinator: BaseCoordinator {
     override func start() {
         let viewController = container.makeNewModuleViewController()
         viewController.coordinator = self
-        navigationController.pushViewController(viewController, animated: true)
+        pushViewController(viewController, animated: false)
+    }
+    
+    // MARK: - Navigation Methods
+    func showDetail(itemId: Int, hidesBottomBar: Bool = true) {
+        let detailViewController = container.makeNewModuleDetailViewController(itemId: itemId)
+        detailViewController.coordinator = self
+        detailViewController.hidesBottomBarWhenPushed = hidesBottomBar
+        pushViewController(detailViewController, animated: true)
+    }
+    
+    func showDetailModal(itemId: Int) {
+        let detailViewController = container.makeNewModuleDetailViewController(itemId: itemId)
+        detailViewController.coordinator = self
+        
+        let modalNavController = UINavigationController(rootViewController: detailViewController)
+        modalNavController.modalPresentationStyle = .fullScreen
+        presentViewController(modalNavController, animated: true)
+    }
+    
+    func showActionSheet(title: String, actions: [String], completion: @escaping (Int) -> Void) {
+        let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
+        
+        for (index, action) in actions.enumerated() {
+            let alertAction = UIAlertAction(title: action, style: .default) { _ in
+                completion(index)
+            }
+            alertController.addAction(alertAction)
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+        alertController.addAction(cancelAction)
+        
+        presentViewController(alertController, animated: true)
+    }
+    
+    func showAlert(title: String, message: String, completion: (() -> Void)? = nil) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default) { _ in
+            completion?()
+        }
+        alertController.addAction(okAction)
+        presentViewController(alertController, animated: true)
+    }
+    
+    func dismissModal() {
+        navigationController.dismiss(animated: true)
+    }
+    
+    func popToRoot() {
+        navigationController.popToRootViewController(animated: true)
     }
 }
 ```
 
-### 2. Adding Module to Main DI Container
+#### Step 5: Integrate with Main DI Container
 
 ```swift
-extension DIContainer {
+// Add to MainDIContainer.swift
+extension MainDIContainer {
     func makeNewModuleDIContainer() -> NewModuleDIContainer {
-        return NewModuleDIContainer(appDIContainer: self)
+        return NewModuleDIContainer(appDIContainer: appDIContainer)
+    }
+}
+
+// Add to MainCoordinator.swift
+class MainCoordinator: BaseCoordinator {
+    
+    func showNewModuleFlow() {
+        let newModuleContainer = container.makeNewModuleDIContainer()
+        let newModuleCoordinator = newModuleContainer.makeNewModuleFlowCoordinator(
+            navigationController: UINavigationController()
+        )
+        
+        newModuleCoordinator.parentCoordinator = self
+        childCoordinators.append(newModuleCoordinator)
+        newModuleCoordinator.start()
+        
+        // Present as modal or add to tab bar
+        presentViewController(newModuleCoordinator.navigationController, animated: true)
+    }
+}
+```
+
+#### Step 6: How to Use Coordinator in ViewController
+
+```swift
+class NewModuleViewController: BaseViewController<NewModuleViewModel> {
+    weak var coordinator: NewModuleCoordinator?
+    
+    // MARK: - Navigation Actions
+    @objc private func showDetailAction() {
+        // Get selected item ID
+        let selectedItemId = 123
+        coordinator?.showDetail(itemId: selectedItemId)
+    }
+    
+    @objc private func showModalAction() {
+        let selectedItemId = 456
+        coordinator?.showDetailModal(itemId: selectedItemId)
+    }
+    
+    @objc private func showOptionsAction() {
+        let actions = ["Edit", "Delete", "Share"]
+        coordinator?.showActionSheet(title: "Options", actions: actions) { [weak self] selectedIndex in
+            switch selectedIndex {
+            case 0: // Edit
+                self?.handleEdit()
+            case 1: // Delete
+                self?.handleDelete()
+            case 2: // Share
+                self?.handleShare()
+            default:
+                break
+            }
+        }
+    }
+    
+    private func showErrorAlert(message: String) {
+        coordinator?.showAlert(title: "Error", message: message)
+    }
+    
+    private func handleNavigationFromViewModel() {
+        // Bind to ViewModel navigation triggers
+        viewModel.$shouldShowDetail
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] shouldShow in
+                if shouldShow, let itemId = self?.viewModel.selectedItemId {
+                    self?.coordinator?.showDetail(itemId: itemId)
+                }
+            }
+            .store(in: &cancellables)
+    }
+}
+
+// MARK: - UITableViewDelegate
+extension NewModuleViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
+        // Get item ID from data source
+        let item = viewModel.items[indexPath.row]
+        coordinator?.showDetail(itemId: item.id)
     }
 }
 ```
