@@ -673,14 +673,23 @@ extension NewModuleDIContainer: NewModuleFactoryProtocol {
 protocol NewModuleViewModelInput {
     func loadInitialData() async
     func refreshData() async
+    func performAction() async
+    func selectItem(at index: Int)
+    func deleteItem(at index: Int) async
+    func searchItems(query: String) async
 }
 
 // MARK: - New Module ViewModel Output Protocol
 protocol NewModuleViewModelOutput: ObservableObject {
     var isLoading: Bool { get }
     var title: String { get }
+    var items: [NewModuleItem] { get }
+    var filteredItems: [NewModuleItem] { get }
+    var selectedItemId: Int? { get }
+    var shouldShowDetail: Bool { get }
     var errorMessage: String? { get }
     var showError: Bool { get }
+    var isEmpty: Bool { get }
 }
 
 // MARK: - New Module ViewModel
@@ -688,18 +697,54 @@ class NewModuleViewModel: NewModuleViewModelOutput {
     
     // MARK: - Services & Dependencies
     public let userManager: UserManagerProtocol
-    private let dataUseCase: DataUseCaseProtocol
-
+    private let getNewModuleDataUseCase: GetNewModuleDataUseCaseProtocol
+    private let deleteNewModuleItemUseCase: DeleteNewModuleItemUseCaseProtocol
+    private let searchNewModuleItemsUseCase: SearchNewModuleItemsUseCaseProtocol
+    
     // MARK: - Published Properties
     @Published var isLoading: Bool = false
     @Published var title: String = "New Module"
+    @Published var items: [NewModuleItem] = []
+    @Published var filteredItems: [NewModuleItem] = []
+    @Published var selectedItemId: Int?
+    @Published var shouldShowDetail: Bool = false
     @Published var errorMessage: String?
     @Published var showError: Bool = false
     
+    // MARK: - Computed Properties
+    var isEmpty: Bool {
+        return filteredItems.isEmpty && !isLoading
+    }
+    
+    // MARK: - Private Properties
+    private var cancellables = Set<AnyCancellable>()
+    private var searchQuery: String = ""
+    
     // MARK: - Initialization
-    init(userManager: UserManagerProtocol, dataUseCase: DataUseCaseProtocol) {
+    init(
+        userManager: UserManagerProtocol,
+        getNewModuleDataUseCase: GetNewModuleDataUseCaseProtocol,
+        deleteNewModuleItemUseCase: DeleteNewModuleItemUseCaseProtocol,
+        searchNewModuleItemsUseCase: SearchNewModuleItemsUseCaseProtocol
+    ) {
         self.userManager = userManager
-        self.dataUseCase = dataUseCase
+        self.getNewModuleDataUseCase = getNewModuleDataUseCase
+        self.deleteNewModuleItemUseCase = deleteNewModuleItemUseCase
+        self.searchNewModuleItemsUseCase = searchNewModuleItemsUseCase
+        
+        setupBindings()
+    }
+    
+    // MARK: - Private Setup
+    private func setupBindings() {
+        // Reset shouldShowDetail after triggering navigation
+        $shouldShowDetail
+            .filter { $0 == true }
+            .delay(for: .milliseconds(100), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.shouldShowDetail = false
+            }
+            .store(in: &cancellables)
     }
 }
 
@@ -714,6 +759,74 @@ extension NewModuleViewModel: NewModuleViewModelInput {
         await loadData()
     }
     
+    func performAction() async {
+        // Custom business logic here
+        guard !isLoading else { return }
+        
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Example: Sync data or perform batch operations
+            let result = try await getNewModuleDataUseCase.syncData()
+            await MainActor.run {
+                // Update UI state
+                title = "Action Completed"
+            }
+        } catch {
+            await MainActor.run {
+                handleError(error)
+            }
+        }
+    }
+    
+    func selectItem(at index: Int) {
+        guard index < filteredItems.count else { return }
+        let item = filteredItems[index]
+        selectedItemId = item.id
+        shouldShowDetail = true
+    }
+    
+    func deleteItem(at index: Int) async {
+        guard index < filteredItems.count else { return }
+        let item = filteredItems[index]
+        
+        do {
+            try await deleteNewModuleItemUseCase.execute(itemId: item.id)
+            await MainActor.run {
+                // Remove from local arrays
+                items.removeAll { $0.id == item.id }
+                updateFilteredItems()
+            }
+        } catch {
+            await MainActor.run {
+                handleError(error)
+            }
+        }
+    }
+    
+    func searchItems(query: String) async {
+        searchQuery = query
+        
+        if query.isEmpty {
+            await MainActor.run {
+                updateFilteredItems()
+            }
+            return
+        }
+        
+        do {
+            let searchResults = try await searchNewModuleItemsUseCase.execute(query: query)
+            await MainActor.run {
+                filteredItems = searchResults
+            }
+        } catch {
+            await MainActor.run {
+                handleError(error)
+            }
+        }
+    }
+    
     // MARK: - Private Methods
     private func loadData() async {
         guard !isLoading else { return }
@@ -723,12 +836,30 @@ extension NewModuleViewModel: NewModuleViewModelInput {
         showError = false
         
         do {
-            let data = try await dataUseCase.execute()
-            print(data)
-            title = "Data Loaded"
-            isLoading = false
+            // Use Case การดึงข้อมูล
+            let fetchedItems = try await getNewModuleDataUseCase.execute()
+            
+            await MainActor.run {
+                items = fetchedItems
+                updateFilteredItems()
+                isLoading = false
+                title = "Loaded \(fetchedItems.count) items"
+            }
         } catch {
-            handleError(error)
+            await MainActor.run {
+                handleError(error)
+            }
+        }
+    }
+    
+    private func updateFilteredItems() {
+        if searchQuery.isEmpty {
+            filteredItems = items
+        } else {
+            filteredItems = items.filter { item in
+                item.name.localizedCaseInsensitiveContains(searchQuery) ||
+                item.description.localizedCaseInsensitiveContains(searchQuery)
+            }
         }
     }
     
@@ -736,6 +867,132 @@ extension NewModuleViewModel: NewModuleViewModelInput {
         isLoading = false
         errorMessage = error.localizedDescription
         showError = true
+    }
+}
+
+// MARK: - Supporting Models
+struct NewModuleItem: Identifiable, Equatable {
+    let id: Int
+    let name: String
+    let description: String
+    let imageURL: String?
+    let createdAt: Date
+    let isActive: Bool
+}
+
+// MARK: - Use Case Protocols
+protocol GetNewModuleDataUseCaseProtocol {
+    func execute() async throws -> [NewModuleItem]
+    func syncData() async throws -> Bool
+}
+
+protocol DeleteNewModuleItemUseCaseProtocol {
+    func execute(itemId: Int) async throws
+}
+
+protocol SearchNewModuleItemsUseCaseProtocol {
+    func execute(query: String) async throws -> [NewModuleItem]
+}
+
+// MARK: - Use Case Implementations Example
+class GetNewModuleDataUseCase: GetNewModuleDataUseCaseProtocol {
+    private let repository: NewModuleRepositoryProtocol
+    
+    init(repository: NewModuleRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func execute() async throws -> [NewModuleItem] {
+        // Business logic here - validation, transformation, etc.
+        let items = try await repository.fetchItems()
+        
+        // Apply business rules
+        let activeItems = items.filter { $0.isActive }
+        let sortedItems = activeItems.sorted { $0.createdAt > $1.createdAt }
+        
+        return sortedItems
+    }
+    
+    func syncData() async throws -> Bool {
+        // Sync logic
+        try await repository.syncWithRemote()
+        return true
+    }
+}
+
+class DeleteNewModuleItemUseCase: DeleteNewModuleItemUseCaseProtocol {
+    private let repository: NewModuleRepositoryProtocol
+    
+    init(repository: NewModuleRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func execute(itemId: Int) async throws {
+        // Business validation
+        let item = try await repository.getItem(id: itemId)
+        
+        guard item.isActive else {
+            throw NewModuleError.cannotDeleteInactiveItem
+        }
+        
+        // Perform deletion
+        try await repository.deleteItem(id: itemId)
+        
+        // Additional business logic (e.g., logging, notifications)
+        // Analytics.track("item_deleted", parameters: ["item_id": itemId])
+    }
+}
+
+class SearchNewModuleItemsUseCase: SearchNewModuleItemsUseCaseProtocol {
+    private let repository: NewModuleRepositoryProtocol
+    
+    init(repository: NewModuleRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func execute(query: String) async throws -> [NewModuleItem] {
+        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return []
+        }
+        
+        // Business logic for search
+        let searchResults = try await repository.searchItems(query: query)
+        
+        // Apply business rules - e.g., relevance scoring
+        let relevantResults = searchResults.filter { item in
+            let score = calculateRelevanceScore(item: item, query: query)
+            return score > 0.3
+        }
+        
+        return relevantResults.sorted { 
+            calculateRelevanceScore(item: $0, query: query) > 
+            calculateRelevanceScore(item: $1, query: query) 
+        }
+    }
+    
+    private func calculateRelevanceScore(item: NewModuleItem, query: String) -> Double {
+        // Simple relevance scoring algorithm
+        let nameScore = item.name.localizedCaseInsensitiveContains(query) ? 1.0 : 0.0
+        let descScore = item.description.localizedCaseInsensitiveContains(query) ? 0.5 : 0.0
+        return nameScore + descScore
+    }
+}
+
+// MARK: - Custom Errors
+enum NewModuleError: LocalizedError {
+    case cannotDeleteInactiveItem
+    case itemNotFound
+    case networkError
+    
+    var errorDescription: String? {
+        switch self {
+        case .cannotDeleteInactiveItem:
+            return "Cannot delete inactive item"
+        case .itemNotFound:
+            return "Item not found"
+        case .networkError:
+            return "Network connection error"
+        }
     }
 }
 ```
@@ -995,6 +1252,91 @@ extension NewModuleViewController: UITableViewDelegate {
    // ✅ Correct
    weak var coordinator: SomeCoordinator?
    ```
+
+---
+
+## 🧪 Testing Guidelines & Examples
+
+### Testing Strategy
+
+- **ViewModels**: Unit tests with mock dependencies
+- **Use Cases**: Unit tests with mock repositories  
+- **Coordinators**: Navigation flow tests
+- **Integration**: End-to-end workflow tests
+
+### Swift Testing Framework Examples
+
+#### Simple ViewModel Testing with Mock Use Case
+
+```swift
+import Testing
+@testable import BaseStructoriOSUIKit
+
+// MARK: - Mock Use Case
+class MockGetDataListUseCase: GetNewModuleDataUseCaseProtocol {
+    var mockResult: Result<[NewModuleItem], Error>?
+    
+    func execute() async throws -> [NewModuleItem] {
+        switch mockResult {
+        case .success(let response):
+            return response
+        case .failure(let error):
+            throw error
+        case .none:
+            throw NSError(domain: "TestError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Mock not configured"])
+        }
+    }
+    
+    func syncData() async throws -> Bool {
+        return true
+    }
+}
+
+// MARK: - Test Suite
+@Suite("NewModuleViewModel Tests")
+struct NewModuleViewModelTests {
+    
+    let mockUserManager: MockUserManager
+    let mockGetDataListUseCase: MockGetDataListUseCase
+    let sut: NewModuleViewModel
+
+    init() {
+        mockUserManager = MockUserManager()
+        mockGetDataListUseCase = MockGetDataListUseCase()
+        sut = NewModuleViewModel(
+            userManager: mockUserManager,
+            getNewModuleDataUseCase: mockGetDataListUseCase,
+            deleteNewModuleItemUseCase: MockDeleteNewModuleItemUseCase(),
+            searchNewModuleItemsUseCase: MockSearchNewModuleItemsUseCase()
+        )
+    }
+    
+    @Test("Load data should update items")
+    func testLoadDataSuccess() async {
+        // Given
+        let expectedItems = [
+            NewModuleItem(id: 1, name: "Item 1", description: "Description 1", imageURL: nil, createdAt: Date(), isActive: true)
+        ]
+        mockGetDataListUseCase.mockResult = .success(expectedItems)
+        
+        // When
+        await sut.loadInitialData()
+        
+        // Then
+        #expect(sut.isLoading == false)
+        #expect(sut.items.count == 1)
+        #expect(sut.title == "Loaded 1 items")
+    }
+}
+```
+
+### Testing Best Practices
+
+#### ✅ Key Points
+- Use descriptive test names with Given-When-Then pattern
+- Mock external dependencies (Use Cases, Repositories)
+- Test async operations with `async throws`
+- Use `#expect` for assertions in Swift Testing
 
 ---
 
