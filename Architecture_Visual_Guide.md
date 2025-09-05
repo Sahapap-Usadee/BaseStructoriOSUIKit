@@ -14,7 +14,7 @@
 │ │                 │  │                 │  │                 │              │
 │ │ • Navigation    │  │ • UI Logic      │  │ • Business      │              │
 │ │ • Flow Control  │  │ • User Input    │  │   Logic         │              │
-│ │ • Screen Trans. │  │ • View Updates  │  │ • Data Binding  │              │
+│ │                 │  │ • View Updates  │  │ • Data Binding  │              │
 │ └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -23,10 +23,10 @@
 │ ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
 │ │    Entities     │  │   Use Cases     │  │  Repositories   │              │
 │ │                 │  │                 │  │   (Protocols)   │              │
-│ │ • Pokemon       │  │ • GetPokemon    │  │ • Pokemon       │              │
-│ │ • User          │  │   List          │  │   Repository    │              │
-│ │ • Session       │  │ • GetPokemon    │  │ • User          │              │
-│ │                 │  │   Detail        │  │   Repository    │              │
+│ │ • User          │  │ • GetUser       │  │ • User          │              │
+│ │                 │  │   DetailUsecase │  │   Repository    │              │
+│ │                 │  │                 │  │                 │              │
+│ │                 │  │                 │  │                 │              │
 │ └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -35,10 +35,11 @@
 │ ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
 │ │  Data Sources   │  │  Repositories   │  │      DTOs       │              │
 │ │                 │  │ (Implementation)│  │                 │              │
-│ │ • Remote API    │  │ • Pokemon Repo  │  │ • PokemonDTO    │              │
-│ │ • Local Cache   │  │   Impl          │  │ • ResponseDTO   │              │
-│ │ • UserDefaults  │  │ • User Repo     │  │ • ErrorDTO      │              │
+│ │ • Remote API    │  │  • User Repo    │  │ • UserDTO       │              │
 │ │                 │  │   Impl          │  │                 │              │
+│ │ • Local Cache   │  │                 │  │                 │              │
+│ │                 │  │                 │  │                 │              │
+│ │ • UserDefaults  │  │                 │  │                 │              │
 │ └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
