@@ -723,8 +723,8 @@ extension NewModuleViewModel: NewModuleViewModelInput {
         showError = false
         
         do {
-            let dataDetail = try await getPokemonDetailUseCase.execute(id: pokemonId)
-            print(dataDetail)
+            let data = try await dataUseCase.execute()
+            print(data)
             title = "Data Loaded"
             isLoading = false
         } catch {
