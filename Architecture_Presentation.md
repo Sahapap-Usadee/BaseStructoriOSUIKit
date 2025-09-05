@@ -764,24 +764,21 @@ class NewModuleViewController: BaseViewController<NewModuleViewModel> {
     }
     
     private func bindViewModel() {
-        // Use output protocol
-        let output = viewModel as NewModuleViewModelOutput
-        
-        output.$title
+        viewModel.$title
             .receive(on: DispatchQueue.main)
             .sink { [weak self] title in
                 self?.title = title
             }
             .store(in: &cancellables)
         
-        output.$isLoading
+        viewModel.$isLoading
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isLoading in
                 // Handle loading state
             }
             .store(in: &cancellables)
         
-        output.$showError
+        viewModel.$showError
             .receive(on: DispatchQueue.main)
             .sink { [weak self] showError in
                 if showError, let message = output.errorMessage {
