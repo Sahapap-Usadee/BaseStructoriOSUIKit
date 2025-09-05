@@ -836,48 +836,6 @@ class NewModuleCoordinator: BaseCoordinator {
         detailViewController.hidesBottomBarWhenPushed = hidesBottomBar
         pushViewController(detailViewController, animated: true)
     }
-    
-    func showDetailModal(itemId: Int) {
-        let detailViewController = container.makeNewModuleDetailViewController(itemId: itemId)
-        detailViewController.coordinator = self
-        
-        let modalNavController = UINavigationController(rootViewController: detailViewController)
-        modalNavController.modalPresentationStyle = .fullScreen
-        presentViewController(modalNavController, animated: true)
-    }
-    
-    func showActionSheet(title: String, actions: [String], completion: @escaping (Int) -> Void) {
-        let alertController = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
-        
-        for (index, action) in actions.enumerated() {
-            let alertAction = UIAlertAction(title: action, style: .default) { _ in
-                completion(index)
-            }
-            alertController.addAction(alertAction)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-        alertController.addAction(cancelAction)
-        
-        presentViewController(alertController, animated: true)
-    }
-    
-    func showAlert(title: String, message: String, completion: (() -> Void)? = nil) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        let okAction = UIAlertAction(title: "OK", style: .default) { _ in
-            completion?()
-        }
-        alertController.addAction(okAction)
-        presentViewController(alertController, animated: true)
-    }
-    
-    func dismissModal() {
-        navigationController.dismiss(animated: true)
-    }
-    
-    func popToRoot() {
-        navigationController.popToRootViewController(animated: true)
-    }
 }
 ```
 
