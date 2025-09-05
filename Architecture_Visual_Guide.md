@@ -21,10 +21,10 @@
 │                               DOMAIN LAYER                                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│ │    Entities     │  │   Use Cases     │  │  Repositories   │              │
+│ │    Use Cases    │  │   Entities      │  │  Repositories   │              │
 │ │                 │  │                 │  │   (Protocols)   │              │
-│ │ • User          │  │ • GetUser       │  │ • User          │              │
-│ │                 │  │   DetailUsecase │  │   Repository    │              │
+│ │ • GetUser       │  │ • User          │  │ • User          │              │
+│ │   DetailUsecase │  │   DetailUsecase │  │   Repository    │              │
 │ │                 │  │                 │  │                 │              │
 │ │                 │  │                 │  │                 │              │
 │ └─────────────────┘  └─────────────────┘  └─────────────────┘              │
@@ -33,13 +33,13 @@
 │                                DATA LAYER                                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│ │  Data Sources   │  │  Repositories   │  │      DTOs       │              │
-│ │                 │  │ (Implementation)│  │                 │              │
-│ │ • Remote API    │  │  • User Repo    │  │ • UserDTO       │              │
-│ │                 │  │   Impl          │  │                 │              │
-│ │ • Local Cache   │  │                 │  │                 │              │
+│ │  Repositories   │  │  Data Sources   │  │      DTOs       │              │
+│ │(Implementation) │  │                 │  │                 │              │
+│ │ • User Repo Imp │  │  • Remote API   │  │ • UserDTO       │              │
+│ │                 │  │  • Local Cache  │  │                 │              │
+│ │ • Local Cache   │  │  • UserDefaults │  │                 │              │
 │ │                 │  │                 │  │                 │              │
-│ │ • UserDefaults  │  │                 │  │                 │              │
+│ │                 │  │                 │  │                 │              │
 │ └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
