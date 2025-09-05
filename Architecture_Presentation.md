@@ -673,7 +673,6 @@ extension NewModuleDIContainer: NewModuleFactoryProtocol {
 protocol NewModuleViewModelInput {
     func loadInitialData() async
     func refreshData() async
-    func performAction() async
 }
 
 // MARK: - New Module ViewModel Output Protocol
@@ -689,19 +688,18 @@ class NewModuleViewModel: NewModuleViewModelOutput {
     
     // MARK: - Services & Dependencies
     public let userManager: UserManagerProtocol
-    
+    private let dataUseCase: DataUseCaseProtocol
+
     // MARK: - Published Properties
     @Published var isLoading: Bool = false
     @Published var title: String = "New Module"
     @Published var errorMessage: String?
     @Published var showError: Bool = false
     
-    // MARK: - Private Properties
-    private var cancellables = Set<AnyCancellable>()
-    
     // MARK: - Initialization
-    init(userManager: UserManagerProtocol) {
+    init(userManager: UserManagerProtocol, dataUseCase: DataUseCaseProtocol) {
         self.userManager = userManager
+        self.dataUseCase = dataUseCase
     }
 }
 
@@ -716,10 +714,6 @@ extension NewModuleViewModel: NewModuleViewModelInput {
         await loadData()
     }
     
-    func performAction() async {
-        // Business logic here
-    }
-    
     // MARK: - Private Methods
     private func loadData() async {
         guard !isLoading else { return }
@@ -729,7 +723,8 @@ extension NewModuleViewModel: NewModuleViewModelInput {
         showError = false
         
         do {
-            // Perform async operations here
+            let dataDetail = try await getPokemonDetailUseCase.execute(id: pokemonId)
+            print(dataDetail)
             title = "Data Loaded"
             isLoading = false
         } catch {
