@@ -1462,7 +1462,6 @@ protocol UserRepositoryProtocol {
     func getUsers() async throws -> [User]
     func getUser(id: Int) async throws -> User
     func updateUser(_ user: User) async throws -> User
-    func saveUsersLocally(_ users: [User]) async throws
 }
 
 protocol ProductRepositoryProtocol {
@@ -1497,10 +1496,6 @@ class UserRepositoryImpl: UserRepositoryProtocol {
         let userDTO = user.toDTO()
         let updatedDTO = try await remoteDataSource.updateUser(userDTO)
         return updatedDTO.toDomain()
-    }
-    
-    func saveUsersLocally(_ users: [User]) async throws {
-        // Implementation can be added when needed
     }
 }
 
