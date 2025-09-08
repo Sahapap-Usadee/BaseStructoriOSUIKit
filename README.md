@@ -33,7 +33,7 @@
 
 ### **🏗️ Architecture Pattern: MVVM-C + Clean Architecture**
 ```
-📱 UIKit + MVVM-C + Clean Architecture + Dependency Injection
+📱 MVVM-C + Clean Architecture + Dependency Injection
 ├── ✅ Presentation Layer (UI, ViewModels, Coordinators)
 ├── ✅ Domain Layer (Entities, Use Cases, Repository Protocols)
 └── ✅ Data Layer (Repository Implementations, Data Sources, DTOs)
