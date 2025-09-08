@@ -1522,10 +1522,6 @@ class UserRepositoryImpl: UserRepositoryProtocol {
         let updatedDTO = try await remoteDataSource.updateUser(userDTO)
         return updatedDTO.toDomain()
     }
-    
-    func saveUsersLocally(_ users: [User]) async throws {
-        // Implementation can be added when needed
-    }
 }
 
 class ProductRepositoryImpl: ProductRepositoryProtocol {
