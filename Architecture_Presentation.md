@@ -1344,9 +1344,51 @@ struct NewModuleViewModelTests {
 
 ## 📋 Complete Clean Architecture Example
 
-### Data Layer Examples
+### 1. Domain Layer (Core Business Logic)
 
-#### 1. DTO (Data Transfer Object)
+#### Domain Entities
+
+```swift
+// MARK: - User Entity (Domain Layer)
+struct User {
+    let id: Int
+    let email: String
+    let firstName: String
+    let profileImage: String?
+    let isActive: Bool
+}
+
+// MARK: - Product Entity (Domain Layer)
+struct Product {
+    let id: Int
+    let name: String
+    let price: Double
+    let imageURL: String?
+    let category: String
+}
+```
+
+#### Repository Protocols (Domain Layer)
+
+```swift
+// MARK: - Repository Protocols (Domain Layer)
+protocol UserRepositoryProtocol {
+    func getUsers() async throws -> [User]
+    func getUser(id: Int) async throws -> User
+    func updateUser(_ user: User) async throws -> User
+    func saveUsersLocally(_ users: [User]) async throws
+}
+
+protocol ProductRepositoryProtocol {
+    func getProducts() async throws -> [Product]
+    func getProduct(id: Int) async throws -> Product
+    func searchProducts(query: String) async throws -> [Product]
+}
+```
+
+### 2. Data Layer (External Concerns)
+
+#### DTO (Data Transfer Objects)
 
 ```swift
 // MARK: - User DTO
@@ -1404,7 +1446,7 @@ extension ProductDTO {
 }
 ```
 
-#### 2. Data Source Protocol & Implementation
+#### 2. Data Source Protocols & Implementation
 
 ```swift
 // MARK: - Data Source Protocols
@@ -1454,25 +1496,7 @@ class UserRemoteDataSource: UserRemoteDataSourceProtocol {
 }
 ```
 
-#### 3. Repository Protocol
-
-```swift
-// MARK: - Repository Protocols (Domain Layer)
-protocol UserRepositoryProtocol {
-    func getUsers() async throws -> [User]
-    func getUser(id: Int) async throws -> User
-    func updateUser(_ user: User) async throws -> User
-    func saveUsersLocally(_ users: [User]) async throws
-}
-
-protocol ProductRepositoryProtocol {
-    func getProducts() async throws -> [Product]
-    func getProduct(id: Int) async throws -> Product
-    func searchProducts(query: String) async throws -> [Product]
-}
-```
-
-#### 4. Repository Implementation
+#### 3. Repository Implementation (Data Layer)
 
 ```swift
 // MARK: - Repository Implementation (Data Layer)
@@ -1504,7 +1528,34 @@ class UserRepositoryImpl: UserRepositoryProtocol {
     }
 }
 
-// MARK: - Domain to DTO Mapping
+class ProductRepositoryImpl: ProductRepositoryProtocol {
+    private let remoteDataSource: ProductRemoteDataSourceProtocol
+    
+    init(remoteDataSource: ProductRemoteDataSourceProtocol) {
+        self.remoteDataSource = remoteDataSource
+    }
+    
+    func getProducts() async throws -> [Product] {
+        let productDTOs = try await remoteDataSource.fetchProducts()
+        return productDTOs.map { $0.toDomain() }
+    }
+    
+    func getProduct(id: Int) async throws -> Product {
+        let productDTO = try await remoteDataSource.fetchProduct(id: id)
+        return productDTO.toDomain()
+    }
+    
+    func searchProducts(query: String) async throws -> [Product] {
+        // For simple example - filter all products
+        let allProducts = try await getProducts()
+        return allProducts.filter { product in
+            product.name.localizedCaseInsensitiveContains(query) ||
+            product.category.localizedCaseInsensitiveContains(query)
+        }
+    }
+}
+
+// MARK: - Domain to DTO Mapping Extensions
 extension User {
     func toDTO() -> UserDTO {
         return UserDTO(
@@ -1516,155 +1567,26 @@ extension User {
         )
     }
 }
-```
-        } catch {
-            throw PokemonDomainError.dataFetchFailed(error)
-        }
-    }
-    
-    func getPokemonDetail(id: Int) async throws -> Pokemon {
-        // Try local first for favorites
-        if let localPokemon = try await localDataSource.getPokemon(id: id) {
-            return localPokemon.toDomain()
-        }
-        
-        // Fetch from remote
-        do {
-            let pokemonDTO = try await remoteDataSource.fetchPokemonDetail(id: id)
-            return pokemonDTO.toDomain()
-        } catch {
-            throw PokemonDomainError.dataFetchFailed(error)
-        }
-    }
-    
-    func searchPokemon(name: String) async throws -> Pokemon {
-        guard !name.isEmpty else {
-            throw PokemonDomainError.invalidInput("Pokemon name cannot be empty")
-        }
-        
-        do {
-            let pokemonDTO = try await remoteDataSource.fetchPokemonByName(name: name)
-            return pokemonDTO.toDomain()
-        } catch {
-            throw PokemonDomainError.pokemonNotFound(name)
-        }
-    }
-    
-    func getFavoritePokemon() async throws -> [Pokemon] {
-        do {
-            let favoriteDTOs = try await localDataSource.getAllPokemon()
-            return favoriteDTOs.map { $0.toDomain() }
-        } catch {
-            throw PokemonDomainError.dataFetchFailed(error)
-        }
-    }
-    
-    func saveFavoritePokemon(_ pokemon: Pokemon) async throws {
-        // First get the full detail if we only have basic info
-        let fullPokemon: Pokemon
-        if pokemon.imageURL == nil || pokemon.types.isEmpty {
-            fullPokemon = try await getPokemonDetail(id: pokemon.id)
-        } else {
-            fullPokemon = pokemon
-        }
-        
-        // Convert to DTO and save
-        let pokemonDTO = fullPokemon.toDTO()
-        
-        do {
-            try await localDataSource.savePokemon(pokemonDTO)
-        } catch {
-            throw PokemonDomainError.saveFailed(error)
-        }
-    }
-    
-    func removeFavoritePokemon(id: Int) async throws {
-        do {
-            try await localDataSource.deletePokemon(id: id)
-        } catch {
-            throw PokemonDomainError.deleteFailed(error)
-        }
-    }
-    
-    func clearFavorites() async throws {
-        do {
-            try await localDataSource.clearAll()
-        } catch {
-            throw PokemonDomainError.clearFailed(error)
-        }
-    }
-}
 
-// MARK: - Domain to DTO Mapping
-extension Pokemon {
-    func toDTO() -> PokemonDTO {
-        return PokemonDTO(
+extension Product {
+    func toDTO() -> ProductDTO {
+        return ProductDTO(
             id: id,
-            name: name.lowercased(),
-            height: Int(height * 10), // Convert back to decimeters
-            weight: Int(weight * 10), // Convert back to hectograms
-            baseExperience: baseExperience,
-            sprites: SpritesDTO(
-                frontDefault: imageURL,
-                frontShiny: nil,
-                backDefault: nil
-            ),
-            types: types.enumerated().map { index, typeName in
-                PokemonTypeDTO(
-                    slot: index + 1,
-                    type: TypeDetailDTO(name: typeName.lowercased(), url: "")
-                )
-            },
-            abilities: abilities.enumerated().map { index, abilityName in
-                PokemonAbilityDTO(
-                    isHidden: false,
-                    slot: index + 1,
-                    ability: AbilityDetailDTO(name: abilityName.lowercased(), url: "")
-                )
-            },
-            stats: stats.map { stat in
-                PokemonStatDTO(
-                    baseStat: stat.baseStat,
-                    effort: stat.effort,
-                    stat: StatDetailDTO(name: stat.name.lowercased(), url: "")
-                )
-            }
+            name: name,
+            price: price,
+            imageURL: imageURL,
+            category: category
         )
     }
 }
-
-// MARK: - Domain Errors
-enum PokemonDomainError: LocalizedError {
-    case dataFetchFailed(Error)
-    case pokemonNotFound(String)
-    case invalidInput(String)
-    case saveFailed(Error)
-    case deleteFailed(Error)
-    case clearFailed(Error)
-    
-    var errorDescription: String? {
-        switch self {
-        case .dataFetchFailed(let error):
-            return "Failed to fetch data: \(error.localizedDescription)"
-        case .pokemonNotFound(let name):
-            return "Pokemon '\(name)' not found"
-        case .invalidInput(let message):
-            return "Invalid input: \(message)"
-        case .saveFailed(let error):
-            return "Failed to save: \(error.localizedDescription)"
-        case .deleteFailed(let error):
-            return "Failed to delete: \(error.localizedDescription)"
-        case .clearFailed(let error):
-            return "Failed to clear data: \(error.localizedDescription)"
-        }
-    }
-}
 ```
 
-#### 5. Use Case Examples
+### 3. Use Case Layer (Application Business Rules)
+
+#### Use Case Protocols & Implementations
 
 ```swift
-// MARK: - Use Case Protocols
+// MARK: - User Use Case Protocols
 protocol GetUsersUseCaseProtocol {
     func execute() async throws -> [User]
 }
@@ -1677,7 +1599,16 @@ protocol UpdateUserUseCaseProtocol {
     func execute(_ user: User) async throws -> User
 }
 
-// MARK: - Use Case Implementations
+// MARK: - Product Use Case Protocols
+protocol GetProductsUseCaseProtocol {
+    func execute() async throws -> [Product]
+}
+
+protocol SearchProductsUseCaseProtocol {
+    func execute(query: String) async throws -> [Product]
+}
+
+// MARK: - User Use Case Implementations
 class GetUsersUseCase: GetUsersUseCaseProtocol {
     private let repository: UserRepositoryProtocol
     
@@ -1717,6 +1648,41 @@ class UpdateUserUseCase: UpdateUserUseCaseProtocol {
     }
 }
 
+// MARK: - Product Use Case Implementations
+class GetProductsUseCase: GetProductsUseCaseProtocol {
+    private let repository: ProductRepositoryProtocol
+    
+    init(repository: ProductRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func execute() async throws -> [Product] {
+        let products = try await repository.getProducts()
+        
+        // Business logic: Sort by price (low to high)
+        return products.sorted { $0.price < $1.price }
+    }
+}
+
+class SearchProductsUseCase: SearchProductsUseCaseProtocol {
+    private let repository: ProductRepositoryProtocol
+    
+    init(repository: ProductRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func execute(query: String) async throws -> [Product] {
+        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ProductUseCaseError.emptySearchQuery
+        }
+        
+        let searchResults = try await repository.searchProducts(query: query)
+        
+        // Business logic: Sort by relevance
+        return searchResults.sorted { $0.name.localizedCaseInsensitiveContains(query) && !$1.name.localizedCaseInsensitiveContains(query) }
+    }
+}
+
 // MARK: - Use Case Errors
 enum UserUseCaseError: LocalizedError {
     case invalidEmail
@@ -1734,6 +1700,20 @@ enum UserUseCaseError: LocalizedError {
         }
     }
 }
+
+enum ProductUseCaseError: LocalizedError {
+    case emptySearchQuery
+    case searchFailed
+    
+    var errorDescription: String? {
+        switch self {
+        case .emptySearchQuery:
+            return "Search query cannot be empty"
+        case .searchFailed:
+            return "Product search failed"
+        }
+    }
+}
 ```
 
 ---
@@ -1746,6 +1726,4 @@ For any questions about this architecture:
 2. Follow the patterns established in Home/List/Settings modules
 3. Ensure all new code follows the MVVM-C pattern
 4. Use dependency injection for all services
-5. Test navigation flows thoroughly
-
 **Remember: This architecture is designed for scalability, maintainability, and testability. Following these patterns will ensure consistent, high-quality code.**
