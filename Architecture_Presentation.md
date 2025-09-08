@@ -1340,6 +1340,404 @@ struct NewModuleViewModelTests {
 
 ---
 
+---
+
+## 📋 Complete Clean Architecture Example
+
+### Data Layer Examples
+
+#### 1. DTO (Data Transfer Object)
+
+```swift
+// MARK: - User DTO
+struct UserDTO: Codable {
+    let id: Int
+    let email: String
+    let firstName: String
+    let profileImage: String?
+    let isActive: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case id, email, isActive
+        case firstName = "first_name"
+        case profileImage = "profile_image"
+    }
+}
+
+// MARK: - Product DTO
+struct ProductDTO: Codable {
+    let id: Int
+    let name: String
+    let price: Double
+    let imageURL: String?
+    let category: String
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, price, category
+        case imageURL = "image_url"
+    }
+}
+
+// MARK: - DTO to Domain Mapping
+extension UserDTO {
+    func toDomain() -> User {
+        return User(
+            id: id,
+            email: email,
+            firstName: firstName,
+            profileImage: profileImage,
+            isActive: isActive
+        )
+    }
+}
+
+extension ProductDTO {
+    func toDomain() -> Product {
+        return Product(
+            id: id,
+            name: name,
+            price: price,
+            imageURL: imageURL,
+            category: category
+        )
+    }
+}
+```
+
+#### 2. Data Source Protocol & Implementation
+
+```swift
+// MARK: - Data Source Protocols
+protocol UserRemoteDataSourceProtocol {
+    func fetchUsers() async throws -> [UserDTO]
+    func fetchUser(id: Int) async throws -> UserDTO
+    func updateUser(_ user: UserDTO) async throws -> UserDTO
+}
+
+protocol ProductRemoteDataSourceProtocol {
+    func fetchProducts() async throws -> [ProductDTO]
+    func fetchProduct(id: Int) async throws -> ProductDTO
+}
+
+// MARK: - Remote Data Source Implementation
+class UserRemoteDataSource: UserRemoteDataSourceProtocol {
+    private let networkService: NetworkServiceProtocol
+    
+    init(networkService: NetworkServiceProtocol) {
+        self.networkService = networkService
+    }
+    
+    func fetchUsers() async throws -> [UserDTO] {
+        let response: [UserDTO] = try await networkService.request(
+            endpoint: "users",
+            method: .GET
+        )
+        return response
+    }
+    
+    func fetchUser(id: Int) async throws -> UserDTO {
+        let response: UserDTO = try await networkService.request(
+            endpoint: "users/\(id)",
+            method: .GET
+        )
+        return response
+    }
+    
+    func updateUser(_ user: UserDTO) async throws -> UserDTO {
+        let response: UserDTO = try await networkService.request(
+            endpoint: "users/\(user.id)",
+            method: .PUT,
+            body: user
+        )
+        return response
+    }
+}
+```
+
+#### 3. Repository Protocol
+
+```swift
+// MARK: - Repository Protocols (Domain Layer)
+protocol UserRepositoryProtocol {
+    func getUsers() async throws -> [User]
+    func getUser(id: Int) async throws -> User
+    func updateUser(_ user: User) async throws -> User
+    func saveUsersLocally(_ users: [User]) async throws
+}
+
+protocol ProductRepositoryProtocol {
+    func getProducts() async throws -> [Product]
+    func getProduct(id: Int) async throws -> Product
+    func searchProducts(query: String) async throws -> [Product]
+}
+```
+
+#### 4. Repository Implementation
+
+```swift
+// MARK: - Repository Implementation (Data Layer)
+class UserRepositoryImpl: UserRepositoryProtocol {
+    private let remoteDataSource: UserRemoteDataSourceProtocol
+    
+    init(remoteDataSource: UserRemoteDataSourceProtocol) {
+        self.remoteDataSource = remoteDataSource
+    }
+    
+    func getUsers() async throws -> [User] {
+        let userDTOs = try await remoteDataSource.fetchUsers()
+        return userDTOs.map { $0.toDomain() }
+    }
+    
+    func getUser(id: Int) async throws -> User {
+        let userDTO = try await remoteDataSource.fetchUser(id: id)
+        return userDTO.toDomain()
+    }
+    
+    func updateUser(_ user: User) async throws -> User {
+        let userDTO = user.toDTO()
+        let updatedDTO = try await remoteDataSource.updateUser(userDTO)
+        return updatedDTO.toDomain()
+    }
+    
+    func saveUsersLocally(_ users: [User]) async throws {
+        // Implementation can be added when needed
+    }
+}
+
+// MARK: - Domain to DTO Mapping
+extension User {
+    func toDTO() -> UserDTO {
+        return UserDTO(
+            id: id,
+            email: email,
+            firstName: firstName,
+            profileImage: profileImage,
+            isActive: isActive
+        )
+    }
+}
+```
+        } catch {
+            throw PokemonDomainError.dataFetchFailed(error)
+        }
+    }
+    
+    func getPokemonDetail(id: Int) async throws -> Pokemon {
+        // Try local first for favorites
+        if let localPokemon = try await localDataSource.getPokemon(id: id) {
+            return localPokemon.toDomain()
+        }
+        
+        // Fetch from remote
+        do {
+            let pokemonDTO = try await remoteDataSource.fetchPokemonDetail(id: id)
+            return pokemonDTO.toDomain()
+        } catch {
+            throw PokemonDomainError.dataFetchFailed(error)
+        }
+    }
+    
+    func searchPokemon(name: String) async throws -> Pokemon {
+        guard !name.isEmpty else {
+            throw PokemonDomainError.invalidInput("Pokemon name cannot be empty")
+        }
+        
+        do {
+            let pokemonDTO = try await remoteDataSource.fetchPokemonByName(name: name)
+            return pokemonDTO.toDomain()
+        } catch {
+            throw PokemonDomainError.pokemonNotFound(name)
+        }
+    }
+    
+    func getFavoritePokemon() async throws -> [Pokemon] {
+        do {
+            let favoriteDTOs = try await localDataSource.getAllPokemon()
+            return favoriteDTOs.map { $0.toDomain() }
+        } catch {
+            throw PokemonDomainError.dataFetchFailed(error)
+        }
+    }
+    
+    func saveFavoritePokemon(_ pokemon: Pokemon) async throws {
+        // First get the full detail if we only have basic info
+        let fullPokemon: Pokemon
+        if pokemon.imageURL == nil || pokemon.types.isEmpty {
+            fullPokemon = try await getPokemonDetail(id: pokemon.id)
+        } else {
+            fullPokemon = pokemon
+        }
+        
+        // Convert to DTO and save
+        let pokemonDTO = fullPokemon.toDTO()
+        
+        do {
+            try await localDataSource.savePokemon(pokemonDTO)
+        } catch {
+            throw PokemonDomainError.saveFailed(error)
+        }
+    }
+    
+    func removeFavoritePokemon(id: Int) async throws {
+        do {
+            try await localDataSource.deletePokemon(id: id)
+        } catch {
+            throw PokemonDomainError.deleteFailed(error)
+        }
+    }
+    
+    func clearFavorites() async throws {
+        do {
+            try await localDataSource.clearAll()
+        } catch {
+            throw PokemonDomainError.clearFailed(error)
+        }
+    }
+}
+
+// MARK: - Domain to DTO Mapping
+extension Pokemon {
+    func toDTO() -> PokemonDTO {
+        return PokemonDTO(
+            id: id,
+            name: name.lowercased(),
+            height: Int(height * 10), // Convert back to decimeters
+            weight: Int(weight * 10), // Convert back to hectograms
+            baseExperience: baseExperience,
+            sprites: SpritesDTO(
+                frontDefault: imageURL,
+                frontShiny: nil,
+                backDefault: nil
+            ),
+            types: types.enumerated().map { index, typeName in
+                PokemonTypeDTO(
+                    slot: index + 1,
+                    type: TypeDetailDTO(name: typeName.lowercased(), url: "")
+                )
+            },
+            abilities: abilities.enumerated().map { index, abilityName in
+                PokemonAbilityDTO(
+                    isHidden: false,
+                    slot: index + 1,
+                    ability: AbilityDetailDTO(name: abilityName.lowercased(), url: "")
+                )
+            },
+            stats: stats.map { stat in
+                PokemonStatDTO(
+                    baseStat: stat.baseStat,
+                    effort: stat.effort,
+                    stat: StatDetailDTO(name: stat.name.lowercased(), url: "")
+                )
+            }
+        )
+    }
+}
+
+// MARK: - Domain Errors
+enum PokemonDomainError: LocalizedError {
+    case dataFetchFailed(Error)
+    case pokemonNotFound(String)
+    case invalidInput(String)
+    case saveFailed(Error)
+    case deleteFailed(Error)
+    case clearFailed(Error)
+    
+    var errorDescription: String? {
+        switch self {
+        case .dataFetchFailed(let error):
+            return "Failed to fetch data: \(error.localizedDescription)"
+        case .pokemonNotFound(let name):
+            return "Pokemon '\(name)' not found"
+        case .invalidInput(let message):
+            return "Invalid input: \(message)"
+        case .saveFailed(let error):
+            return "Failed to save: \(error.localizedDescription)"
+        case .deleteFailed(let error):
+            return "Failed to delete: \(error.localizedDescription)"
+        case .clearFailed(let error):
+            return "Failed to clear data: \(error.localizedDescription)"
+        }
+    }
+}
+```
+
+#### 5. Use Case Examples
+
+```swift
+// MARK: - Use Case Protocols
+protocol GetUsersUseCaseProtocol {
+    func execute() async throws -> [User]
+}
+
+protocol GetUserDetailUseCaseProtocol {
+    func execute(id: Int) async throws -> User
+}
+
+protocol UpdateUserUseCaseProtocol {
+    func execute(_ user: User) async throws -> User
+}
+
+// MARK: - Use Case Implementations
+class GetUsersUseCase: GetUsersUseCaseProtocol {
+    private let repository: UserRepositoryProtocol
+    
+    init(repository: UserRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func execute() async throws -> [User] {
+        let users = try await repository.getUsers()
+        
+        // Business logic: Filter active users only
+        let activeUsers = users.filter { $0.isActive }
+        
+        // Business logic: Sort by first name
+        return activeUsers.sorted { $0.firstName < $1.firstName }
+    }
+}
+
+class UpdateUserUseCase: UpdateUserUseCaseProtocol {
+    private let repository: UserRepositoryProtocol
+    
+    init(repository: UserRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func execute(_ user: User) async throws -> User {
+        // Business validation
+        guard !user.email.isEmpty else {
+            throw UserUseCaseError.invalidEmail
+        }
+        
+        guard !user.firstName.isEmpty else {
+            throw UserUseCaseError.invalidName
+        }
+        
+        return try await repository.updateUser(user)
+    }
+}
+
+// MARK: - Use Case Errors
+enum UserUseCaseError: LocalizedError {
+    case invalidEmail
+    case invalidName
+    case updateFailed
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidEmail:
+            return "Email cannot be empty"
+        case .invalidName:
+            return "First name cannot be empty"
+        case .updateFailed:
+            return "Failed to update user"
+        }
+    }
+}
+```
+
+---
+
 ## 📞 Support & Questions
 
 For any questions about this architecture:
