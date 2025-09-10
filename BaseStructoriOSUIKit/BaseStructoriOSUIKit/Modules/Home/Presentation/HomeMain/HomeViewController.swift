@@ -91,7 +91,7 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .red
         
         view.addSubview(titleLabel)
         view.addSubview(descriptionLabel)
