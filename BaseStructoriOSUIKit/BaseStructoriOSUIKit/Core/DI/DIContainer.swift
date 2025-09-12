@@ -19,6 +19,8 @@ protocol CoordinatorFactory {
 
 protocol ModuleContainerFactory {
     func makeMainDIContainer() -> MainDIContainer
+    func makeLoadingDIContainer() -> LoadingDIContainer
+
 }
 
 //MARK: - App DI Container (Composition Root)
@@ -32,6 +34,7 @@ class AppDIContainer {
     private lazy var userManager: UserManagerProtocol = UserManager()
 
     private lazy var mainDIContainer: MainDIContainer = MainDIContainer(appDIContainer: self)
+    private lazy var loadingDIContainer: LoadingDIContainer = LoadingDIContainer(appDIContainer: self)
 }
 
 extension AppDIContainer: ServiceFactory {
@@ -51,9 +54,12 @@ extension AppDIContainer: ServiceFactory {
 }
 
 extension AppDIContainer: ModuleContainerFactory {
-    // MARK: Module Containers with Dependency Validation
     func makeMainDIContainer() -> MainDIContainer {
         return mainDIContainer
+    }
+
+    func makeLoadingDIContainer() -> LoadingDIContainer {
+        return loadingDIContainer
     }
 }
 

@@ -14,31 +14,32 @@
 │ │                 │  │                 │  │                 │              │
 │ │ • Navigation    │  │ • UI Logic      │  │ • Business      │              │
 │ │ • Flow Control  │  │ • User Input    │  │   Logic         │              │
-│ │ • Screen Trans. │  │ • View Updates  │  │ • Data Binding  │              │
+│ │                 │  │ • View Updates  │  │ • Data Binding  │              │
 │ └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                               DOMAIN LAYER                                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│ │    Entities     │  │   Use Cases     │  │  Repositories   │              │
+│ │    Use Cases    │  │   Entities      │  │  Repositories   │              │
 │ │                 │  │                 │  │   (Protocols)   │              │
-│ │ • Pokemon       │  │ • GetPokemon    │  │ • Pokemon       │              │
-│ │ • User          │  │   List          │  │   Repository    │              │
-│ │ • Session       │  │ • GetPokemon    │  │ • User          │              │
-│ │                 │  │   Detail        │  │   Repository    │              │
+│ │ • GetUser       │  │ • User          │  │ • User          │              │
+│ │   DetailUsecase │  │   DetailUsecase │  │   Repository    │              │
+│ │                 │  │                 │  │                 │              │
+│ │                 │  │                 │  │                 │              │
 │ └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                                DATA LAYER                                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐              │
-│ │  Data Sources   │  │  Repositories   │  │      DTOs       │              │
-│ │                 │  │ (Implementation)│  │                 │              │
-│ │ • Remote API    │  │ • Pokemon Repo  │  │ • PokemonDTO    │              │
-│ │ • Local Cache   │  │   Impl          │  │ • ResponseDTO   │              │
-│ │ • UserDefaults  │  │ • User Repo     │  │ • ErrorDTO      │              │
-│ │                 │  │   Impl          │  │                 │              │
+│ │  Repositories   │  │  Data Sources   │  │      DTOs       │              │
+│ │(Implementation) │  │                 │  │                 │              │
+│ │ • User Repo Imp │  │  • Remote API   │  │ • UserDTO       │              │
+│ │                 │  │  • Local Cache  │  │                 │              │
+│ │ • Local Cache   │  │  • UserDefaults │  │                 │              │
+│ │                 │  │                 │  │                 │              │
+│ │                 │  │                 │  │                 │              │
 │ └─────────────────┘  └─────────────────┘  └─────────────────┘              │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```

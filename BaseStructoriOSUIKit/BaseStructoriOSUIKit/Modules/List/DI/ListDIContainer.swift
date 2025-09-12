@@ -13,6 +13,10 @@ protocol ListFactoryProtocol {
     func makeListViewController() -> ListViewController
 }
 
+protocol ListCoordinatorFactory {
+    func makeListFlowCoordinator(navigationController: UINavigationController) -> ListCoordinator
+}
+
 // MARK: - List DI Container
 class ListDIContainer {
     
@@ -21,7 +25,10 @@ class ListDIContainer {
     init(appDIContainer: AppDIContainer) {
         self.appDIContainer = appDIContainer
     }
-    
+}
+
+// MARK: - Coordinator Factory
+extension ListDIContainer: ListCoordinatorFactory {
     func makeListFlowCoordinator(navigationController: UINavigationController) -> ListCoordinator {
         return ListCoordinator(navigationController: navigationController, container: self)
     }

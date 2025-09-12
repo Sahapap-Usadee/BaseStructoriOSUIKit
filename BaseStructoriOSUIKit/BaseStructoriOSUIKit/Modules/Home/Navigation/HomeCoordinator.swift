@@ -47,19 +47,4 @@ class HomeCoordinator: BaseCoordinator {
         modalNavController.modalPresentationStyle = .fullScreen
         presentViewController(modalNavController)
     }
-    
-    private func toggleTheme() {
-        // Handle theme toggle logic
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            
-            UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve) {
-                if window.overrideUserInterfaceStyle == .dark {
-                    window.overrideUserInterfaceStyle = .light
-                } else {
-                    window.overrideUserInterfaceStyle = .dark
-                }
-            }
-        }
-    }
 }
