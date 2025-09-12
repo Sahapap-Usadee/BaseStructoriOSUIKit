@@ -53,6 +53,7 @@ extension HomeDIContainer: HomeFactoryProtocol {
     
     func makeHomeViewController() -> HomeViewController {
         let viewModel = makeHomeViewModel()
+        print("")
         return HomeViewController(viewModel: viewModel)
     }
     
