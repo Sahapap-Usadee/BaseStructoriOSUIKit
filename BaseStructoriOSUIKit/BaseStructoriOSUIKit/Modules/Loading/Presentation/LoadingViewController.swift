@@ -8,11 +8,14 @@
 import UIKit
 import Combine
 
-class LoadingViewController: BaseViewController<LoadingViewModel>, NavigationConfigurable {
+class LoadingViewController: BaseViewModelController<LoadingViewModel> {
     
     // MARK: - Properties
     weak var coordinator: LoadingCoordinator?
     private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Navigation Configuration
+    override var navigationStyle: NavigationBarStyle { .hidden }
     
     // MARK: - UI Components
     private let logoImageView: UIImageView = {
@@ -59,15 +62,11 @@ class LoadingViewController: BaseViewController<LoadingViewModel>, NavigationCon
         return indicator
     }()
     
-    // MARK: - Navigation Configuration
-    var navStyle: NavigationBarStyle { .hidden }
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         bindViewModel()
-        configureNavigationBar()
     }
     
     override func viewDidAppear(_ animated: Bool) {

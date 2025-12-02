@@ -9,12 +9,16 @@ import UIKit
 import Combine
 import Kingfisher
 
-class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigurable {
+class HomeViewController: BaseViewModelController<HomeViewModel> {
 
     // MARK: - Properties
     weak var coordinator: HomeCoordinator?
 
     private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Navigation Configuration
+    override var navigationTitle: String? { "Pokemon List" }
+    override var navigationStyle: NavigationBarStyle { .colored(.systemBlue) }
 
     // MARK: - UI Components
     private let titleLabel: UILabel = {
@@ -74,11 +78,6 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
         Task {
             await viewModel.loadInitialData()
         }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        configureNavigationBar()
     }
     
     override func viewDidAppear(_ animated: Bool) {

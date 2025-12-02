@@ -8,23 +8,18 @@
 import UIKit
 import Combine
 
-class SettingsViewController: UIViewController, NavigationConfigurable {
+class SettingsViewController: BaseViewModelController<SettingsViewModel> {
 
     // MARK: - Properties
     weak var coordinator: SettingsCoordinator?
-    let viewModel: SettingsViewModel  // Changed to internal access
     private var cancellables = Set<AnyCancellable>()
     
-    // MARK: - Initialization
-    init(viewModel: SettingsViewModel) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
+    // MARK: - Navigation Configuration
+    override var navigationTitle: String? { "ตั้งค่า" }
+    override var navigationStyle: NavigationBarStyle { .default }
+    override var prefersLargeTitles: Bool { true }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
+    // MARK: - UI Components
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
         tableView.backgroundColor = .systemGroupedBackground
@@ -54,15 +49,11 @@ class SettingsViewController: UIViewController, NavigationConfigurable {
         ])
     ]
     
-    var navTitle: String? { "ตั้งค่า" }
-    var navStyle: NavigationBarStyle { .default }
-    var largeTitleMode: UINavigationItem.LargeTitleDisplayMode { .always }
-    
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        configureNavigationBar()
-        addNavButton(position: .right, image: UIImage(systemName: "gear")) { [weak self] in
+        addRightButton(image: UIImage(systemName: "gear")) { [weak self] in
             self?.settingsButtonTapped()
         }
     }

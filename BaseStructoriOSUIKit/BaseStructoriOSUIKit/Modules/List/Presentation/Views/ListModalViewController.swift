@@ -7,9 +7,13 @@
 
 import UIKit
 
-class ListModalViewController: UIViewController, NavigationConfigurable {
-
+class ListModalViewController: BaseViewController {
+    
+    // MARK: - Properties
     weak var coordinator: ListCoordinator?
+    
+    // MARK: - Navigation Configuration
+    override var navigationStyle: NavigationBarStyle { .hidden }
 
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -40,16 +44,12 @@ class ListModalViewController: UIViewController, NavigationConfigurable {
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(dismissButtonTapped), for: .touchUpInside)
         return button
     }()
-
-    var navStyle: NavigationBarStyle { .hidden }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        configureNavigationBar()
     }
 
     private func setupUI() {
@@ -58,6 +58,8 @@ class ListModalViewController: UIViewController, NavigationConfigurable {
         view.addSubview(titleLabel)
         view.addSubview(descriptionLabel)
         view.addSubview(dismissButton)
+        
+        dismissButton.addTarget(self, action: #selector(dismissButtonTapped), for: .touchUpInside)
 
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),

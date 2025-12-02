@@ -9,10 +9,14 @@ import UIKit
 import Combine
 import Kingfisher
 
-class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, NavigationConfigurable {
+class HomeDetailViewController: BaseViewModelController<HomeDetailViewModel> {
     
     weak var coordinator: HomeCoordinator?
     private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Navigation Configuration
+    override var navigationTitle: String? { viewModel.pokemonName }
+    override var navigationStyle: NavigationBarStyle { .default }
     
     // MARK: - UI Components
     private let scrollView: UIScrollView = {
@@ -70,14 +74,11 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
         return indicator
     }()
     
-    var navTitle: String? { viewModel.pokemonName }
-    var navStyle: NavigationBarStyle { .default }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         bindViewModel()
-        addNavButton(position: .right, image: UIImage(systemName: "square.and.arrow.up")) { [weak self] in
+        addRightButton(image: UIImage(systemName: "square.and.arrow.up")) { [weak self] in
             self?.shareButtonTapped()
         }
         
@@ -85,11 +86,6 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
         Task {
             await viewModel.loadPokemonDetail()
         }
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        configureNavigationBar()
     }
 
     private func setupUI() {
@@ -246,7 +242,7 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
         loadPokemonImage()
         
         // Update navigation title
-        configureNavigationBar()
+        title = viewModel.pokemonName
     }
     
     private func updateInfoCards() {

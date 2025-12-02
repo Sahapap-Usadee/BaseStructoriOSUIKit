@@ -8,22 +8,15 @@
 import UIKit
 import Combine
 
-class ListViewController: UIViewController, NavigationConfigurable {
+class ListViewController: BaseViewModelController<ListViewModel> {
     
     // MARK: - Properties
     weak var coordinator: ListCoordinator?
-    private let viewModel: ListViewModel
     private var cancellables = Set<AnyCancellable>()
     
-    // MARK: - Initialization
-    init(viewModel: ListViewModel) {
-        self.viewModel = viewModel
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    // MARK: - Navigation Configuration
+    override var navigationTitle: String? { "รายการ" }
+    override var navigationStyle: NavigationBarStyle { .colored(UIColor(hex: "cc2b5e")) }
     
     // MARK: - UI Components
     private let titleLabel: UILabel = {
@@ -95,19 +88,15 @@ class ListViewController: UIViewController, NavigationConfigurable {
         return button
     }()
     
-    // MARK: - Navigation Configuration
-    var navTitle: String? { "รายการ" }
-    var navStyle: NavigationBarStyle { .colored(UIColor(hex: "cc2b5e")) }
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        configureNavigationBar()
-        addNavButton(position: .right, image: UIImage(systemName: "info.circle")) { [weak self] in
+        addRightButton(image: UIImage(systemName: "info.circle")) { [weak self] in
             self?.infoButtonTapped()
         }
     }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }

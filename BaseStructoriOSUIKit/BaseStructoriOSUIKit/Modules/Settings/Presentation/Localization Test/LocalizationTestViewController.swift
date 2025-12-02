@@ -8,10 +8,12 @@
 import UIKit
 
 // MARK: - Localization Test View Controller (Programmatic UI)
-class LocalizationTestViewController: UIViewController, NavigationConfigurable {
+class LocalizationTestViewController: BaseViewController {
     weak var coordinator: SettingsCoordinator?
-    var navTitle: String? { "localization_test".localized }
-    var navStyle: NavigationBarStyle { .default }
+    
+    // MARK: - Navigation Configuration
+    override var navigationTitle: String? { "localization_test".localized }
+    override var navigationStyle: NavigationBarStyle { .default }
 
     // MARK: - UI Components
     private lazy var scrollView: UIScrollView = {
@@ -298,7 +300,6 @@ class LocalizationTestViewController: UIViewController, NavigationConfigurable {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        configureNavigationBar()
         updateAllLocalizedContent()
     }
 

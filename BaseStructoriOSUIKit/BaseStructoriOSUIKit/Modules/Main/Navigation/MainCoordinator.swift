@@ -38,7 +38,7 @@ final class MainCoordinator: BaseCoordinator {
         let homeDI = container.makeHomeDIContainer()
         let homeVC = homeDI.makeHomeViewController()
 
-        let nav = NavigationManager.shared.createNavigationController(rootViewController: homeVC, style: .default)
+        let nav = UINavigationController(rootViewController: homeVC)
         nav.tabBarItem = UITabBarItem(title: "หน้าหลัก", image: UIImage(systemName: "house"), selectedImage: UIImage(systemName: "house.fill"))
 
         let coordinator = homeDI.makeHomeFlowCoordinator(navigationController: nav)
@@ -52,7 +52,7 @@ final class MainCoordinator: BaseCoordinator {
         let listDI = container.makeListDIContainer()
         let listVC = listDI.makeListViewController()
 
-        let nav = NavigationManager.shared.createNavigationController(rootViewController: listVC, style: .colored(.systemBlue))
+        let nav = UINavigationController(rootViewController: listVC)
         nav.tabBarItem = UITabBarItem(title: "รายการ", image: UIImage(systemName: "list.bullet"), selectedImage: UIImage(systemName: "list.bullet.rectangle.fill"))
 
         let coordinator = listDI.makeListFlowCoordinator(navigationController: nav)
@@ -66,7 +66,7 @@ final class MainCoordinator: BaseCoordinator {
         let settingsDI = container.makeSettingsDIContainer()
         let settingsVC = settingsDI.makeSettingsViewController()
 
-        let nav = NavigationManager.shared.createNavigationController(rootViewController: settingsVC, style: .default)
+        let nav = UINavigationController(rootViewController: settingsVC)
         nav.tabBarItem = UITabBarItem(title: "ตั้งค่า", image: UIImage(systemName: "gearshape"), selectedImage: UIImage(systemName: "gearshape.fill"))
 
         let coordinator = settingsDI.makeSettingsFlowCoordinator(navigationController: nav)
