@@ -70,20 +70,16 @@ class HomeDetailViewController: BaseViewController<HomeDetailViewModel>, Navigat
         return indicator
     }()
     
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .title(viewModel.pokemonName)
-            .style(.default)
-            .rightButton(image: UIImage(systemName: "square.and.arrow.up")) { [weak self] in
-                self?.shareButtonTapped()
-            }
-            .build()
-    }
+    var navTitle: String? { viewModel.pokemonName }
+    var navStyle: NavigationBarStyle { .default }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         bindViewModel()
+        addNavButton(position: .right, image: UIImage(systemName: "square.and.arrow.up")) { [weak self] in
+            self?.shareButtonTapped()
+        }
         
         // Load pokemon detail
         Task {

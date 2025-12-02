@@ -96,21 +96,17 @@ class ListViewController: UIViewController, NavigationConfigurable {
     }()
     
     // MARK: - Navigation Configuration
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .title("รายการ")
-            .style(.gradient([.init(hex: "cc2b5e"), .init(hex: "753a88")]))
-            .rightButton(image: UIImage(systemName: "info.circle")) { [weak self] in
-                self?.infoButtonTapped()
-            }
-            .build()
-    }
+    var navTitle: String? { "รายการ" }
+    var navStyle: NavigationBarStyle { .colored(UIColor(hex: "cc2b5e")) }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         configureNavigationBar()
+        addNavButton(position: .right, image: UIImage(systemName: "info.circle")) { [weak self] in
+            self?.infoButtonTapped()
+        }
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

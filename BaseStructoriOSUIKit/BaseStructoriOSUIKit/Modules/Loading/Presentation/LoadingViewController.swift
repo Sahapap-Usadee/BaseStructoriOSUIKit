@@ -60,11 +60,7 @@ class LoadingViewController: BaseViewController<LoadingViewModel>, NavigationCon
     }()
     
     // MARK: - Navigation Configuration
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .style(.hidden)
-            .build()
-    }
+    var navStyle: NavigationBarStyle { .hidden }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {

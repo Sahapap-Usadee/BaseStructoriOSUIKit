@@ -12,168 +12,121 @@ enum NavigationBarStyle {
     case `default`
     case transparent
     case colored(UIColor)
-    case gradient([UIColor])
     case hidden
-    case custom(NavigationBarConfiguration)
-}
-
-struct NavigationBarConfiguration {
-    let backgroundColor: UIColor?
-    let titleColor: UIColor?
-    let titleFont: UIFont?
-    let isTranslucent: Bool
-    let prefersLargeTitles: Bool
-    let hideBackButtonText: Bool
-    let customBackButton: UIImage?
 }
 
 // MARK: - Navigation Manager
-class NavigationManager {
-    static let shared = NavigationManager()
+final class NavigationManager {
     
+    static let shared = NavigationManager()
     private init() {}
     
     // MARK: - Global Setup
-    func setupGlobalAppearance() {
+    func setupGlobalAppearance(
+        tintColor: UIColor = .systemBlue,
+        backgroundColor: UIColor = .systemBackground,
+        hideBackButtonText: Bool = true
+    ) {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .systemBackground
-        appearance.titleTextAttributes = [
-            .foregroundColor: UIColor.label,
-            .font: UIFont.systemFont(ofSize: 18, weight: .semibold)
-        ]
-        appearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor.label,
-            .font: UIFont.systemFont(ofSize: 34, weight: .bold)
-        ]
+        appearance.backgroundColor = backgroundColor
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
         
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         UINavigationBar.appearance().compactAppearance = appearance
+        UINavigationBar.appearance().tintColor = tintColor
         
-        // Back button configuration
-        UINavigationBar.appearance().tintColor = .systemBlue
-        UIBarButtonItem.appearance().setBackButtonTitlePositionAdjustment(
-            UIOffset(horizontal: -1000, vertical: 0),
-            for: .default
-        )
+        if hideBackButtonText {
+            UIBarButtonItem.appearance().setBackButtonTitlePositionAdjustment(
+                UIOffset(horizontal: -1000, vertical: 0), for: .default
+            )
+        }
     }
     
-    // MARK: - Navigation Factory
+    // MARK: - Factory
     func createNavigationController(
         rootViewController: UIViewController,
         style: NavigationBarStyle = .default
     ) -> UINavigationController {
-        let navController = UINavigationController(rootViewController: rootViewController)
-        applyNavigationStyle(style, to: navController)
-        return navController
+        let nav = UINavigationController(rootViewController: rootViewController)
+        apply(style, to: nav)
+        return nav
     }
     
-    // MARK: - Style Application
-    func applyNavigationStyle(_ style: NavigationBarStyle, to navigationController: UINavigationController) {
+    // MARK: - Apply Style
+    func apply(_ style: NavigationBarStyle, to nav: UINavigationController) {
+        let appearance = UINavigationBarAppearance()
+        
         switch style {
         case .default:
-            setDefaultNavigationStyle(navigationController)
-        case .transparent:
-            setTransparentNavigationStyle(navigationController)
-        case .colored(let color):
-            setColoredNavigationStyle(color, navigationController)
-        case .gradient(let colors):
-            setGradientNavigationStyle(colors, navigationController)
-        case .hidden:
-            navigationController.setNavigationBarHidden(true, animated: false)
-        case .custom(let config):
-            setCustomNavigationStyle(config, navigationController)
-        }
-    }
-    
-    // MARK: - Private Style Methods
-    private func setDefaultNavigationStyle(_ navigationController: UINavigationController) {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .systemBackground
-        
-        navigationController.navigationBar.standardAppearance = appearance
-        navigationController.navigationBar.scrollEdgeAppearance = appearance
-        navigationController.navigationBar.compactAppearance = appearance
-        navigationController.setNavigationBarHidden(false, animated: false)
-    }
-    
-    private func setTransparentNavigationStyle(_ navigationController: UINavigationController) {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        
-        navigationController.navigationBar.standardAppearance = appearance
-        navigationController.navigationBar.scrollEdgeAppearance = appearance
-        navigationController.setNavigationBarHidden(false, animated: false)
-    }
-    
-    private func setColoredNavigationStyle(_ color: UIColor, _ navigationController: UINavigationController) {
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = color
-        
-        navigationController.navigationBar.standardAppearance = appearance
-        navigationController.navigationBar.scrollEdgeAppearance = appearance
-    }
-    
-    private func setGradientNavigationStyle(_ colors: [UIColor], _ navigationController: UINavigationController) {
-        let gradientLayer = CAGradientLayer()
-        gradientLayer.colors = colors.map { $0.cgColor }
-        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
-        gradientLayer.endPoint = CGPoint(x: 1, y: 0)
-        gradientLayer.frame = navigationController.navigationBar.bounds
-        
-        let gradientImage = gradientLayer.toImage()
-        let appearance = UINavigationBarAppearance()
-        appearance.backgroundImage = gradientImage
-        
-        navigationController.navigationBar.standardAppearance = appearance
-        navigationController.navigationBar.scrollEdgeAppearance = appearance
-    }
-    
-    private func setCustomNavigationStyle(_ config: NavigationBarConfiguration, _ navigationController: UINavigationController) {
-        let appearance = UINavigationBarAppearance()
-        
-        if let backgroundColor = config.backgroundColor {
             appearance.configureWithOpaqueBackground()
-            appearance.backgroundColor = backgroundColor
-        } else {
+            appearance.backgroundColor = .systemBackground
+            nav.setNavigationBarHidden(false, animated: false)
+            
+        case .transparent:
             appearance.configureWithTransparentBackground()
+            nav.setNavigationBarHidden(false, animated: false)
+            
+        case .colored(let color):
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = color
+            appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+            nav.navigationBar.tintColor = .white
+            
+        case .hidden:
+            nav.setNavigationBarHidden(true, animated: false)
+            return
         }
         
-        if let titleColor = config.titleColor, let titleFont = config.titleFont {
-            appearance.titleTextAttributes = [
-                .foregroundColor: titleColor,
-                .font: titleFont
-            ]
-        }
-        
-        navigationController.navigationBar.standardAppearance = appearance
-        navigationController.navigationBar.scrollEdgeAppearance = appearance
-        navigationController.navigationBar.isTranslucent = config.isTranslucent
-        navigationController.navigationBar.prefersLargeTitles = config.prefersLargeTitles
-    }
-    
-    // MARK: - Push Methods
-    func pushViewController(_ viewController: UIViewController, 
-                          on navigationController: UINavigationController, 
-                          hideTabBar: Bool = false,
-                          animated: Bool = true) {
-        viewController.hidesBottomBarWhenPushed = hideTabBar
-        navigationController.pushViewController(viewController, animated: animated)
+        nav.navigationBar.standardAppearance = appearance
+        nav.navigationBar.scrollEdgeAppearance = appearance
+        nav.navigationBar.compactAppearance = appearance
     }
 }
 
-
-// MARK: - CALayer Extension
-extension CALayer {
-    func toImage() -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(bounds.size, false, UIScreen.main.scale)
-        defer { UIGraphicsEndImageContext() }
-        
-        guard let context = UIGraphicsGetCurrentContext() else { return nil }
-        render(in: context)
-        return UIGraphicsGetImageFromCurrentImageContext()
+// MARK: - UIViewController Extension
+extension UIViewController {
+    
+    func setNavTitle(_ title: String) {
+        self.title = title
     }
+    
+    func setNavStyle(_ style: NavigationBarStyle) {
+        guard let nav = navigationController else { return }
+        NavigationManager.shared.apply(style, to: nav)
+    }
+    
+    func addNavButton(
+        position: NavButtonPosition,
+        image: UIImage?,
+        action: @escaping () -> Void
+    ) {
+        let button = UIBarButtonItem(image: image, style: .plain, target: nil, action: nil)
+        button.primaryAction = UIAction { _ in action() }
+        
+        switch position {
+        case .left:  navigationItem.leftBarButtonItem = button
+        case .right: navigationItem.rightBarButtonItem = button
+        }
+    }
+    
+    func addNavButton(
+        position: NavButtonPosition,
+        title: String,
+        action: @escaping () -> Void
+    ) {
+        let button = UIBarButtonItem(title: title, style: .plain, target: nil, action: nil)
+        button.primaryAction = UIAction { _ in action() }
+        
+        switch position {
+        case .left:  navigationItem.leftBarButtonItem = button
+        case .right: navigationItem.rightBarButtonItem = button
+        }
+    }
+}
+
+enum NavButtonPosition {
+    case left, right
 }

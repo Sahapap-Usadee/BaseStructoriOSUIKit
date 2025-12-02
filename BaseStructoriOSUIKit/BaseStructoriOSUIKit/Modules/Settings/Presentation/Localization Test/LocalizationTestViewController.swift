@@ -10,12 +10,8 @@ import UIKit
 // MARK: - Localization Test View Controller (Programmatic UI)
 class LocalizationTestViewController: UIViewController, NavigationConfigurable {
     weak var coordinator: SettingsCoordinator?
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .title("localization_test".localized)
-            .style(.default)
-            .build()
-    }
+    var navTitle: String? { "localization_test".localized }
+    var navStyle: NavigationBarStyle { .default }
 
     // MARK: - UI Components
     private lazy var scrollView: UIScrollView = {

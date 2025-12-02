@@ -7,39 +7,24 @@
 
 import UIKit
 
-protocol MainModuleContainerFactory {
-    func makeHomeDIContainer() -> HomeDIContainer
-    func makeListDIContainer() -> ListDIContainer
-    func makeSettingsDIContainer() -> SettingsDIContainer
-}
-
-class MainDIContainer {
+final class MainDIContainer {
 
     private let appDIContainer: AppDIContainer
 
-    private lazy var homeDIContainer: HomeDIContainer = HomeDIContainer(appDIContainer: appDIContainer)
-    private lazy var listDIContainer: ListDIContainer = ListDIContainer(appDIContainer: appDIContainer)
-    private lazy var settingsDIContainer: SettingsDIContainer = SettingsDIContainer(appDIContainer: appDIContainer)
+    private lazy var homeDIContainer = HomeDIContainer(appDIContainer: appDIContainer)
+    private lazy var listDIContainer = ListDIContainer(appDIContainer: appDIContainer)
+    private lazy var settingsDIContainer = SettingsDIContainer(appDIContainer: appDIContainer)
 
     init(appDIContainer: AppDIContainer) {
         self.appDIContainer = appDIContainer
     }
 
+    // MARK: - Factory
     func makeMainFlowCoordinator(window: UIWindow) -> MainCoordinator {
-        return MainCoordinator(window: window, container: self)
-    }
-}
-
-extension MainDIContainer: MainModuleContainerFactory {
-    func makeHomeDIContainer() -> HomeDIContainer {
-        return homeDIContainer
+        MainCoordinator(window: window, container: self)
     }
 
-    func makeListDIContainer() -> ListDIContainer {
-        return listDIContainer
-    }
-
-    func makeSettingsDIContainer() -> SettingsDIContainer {
-        return settingsDIContainer
-    }
+    func makeHomeDIContainer() -> HomeDIContainer { homeDIContainer }
+    func makeListDIContainer() -> ListDIContainer { listDIContainer }
+    func makeSettingsDIContainer() -> SettingsDIContainer { settingsDIContainer }
 }

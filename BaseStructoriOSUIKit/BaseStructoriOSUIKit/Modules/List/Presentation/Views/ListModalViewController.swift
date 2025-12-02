@@ -8,9 +8,9 @@
 import UIKit
 
 class ListModalViewController: UIViewController, NavigationConfigurable {
-    
+
     weak var coordinator: ListCoordinator?
-    
+
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Modal จาก Coordinator"
@@ -20,7 +20,7 @@ class ListModalViewController: UIViewController, NavigationConfigurable {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+
     private let descriptionLabel: UILabel = {
         let label = UILabel()
         label.text = "นี่คือตัวอย่างการแสดง Modal\nผ่าน Coordinator pattern"
@@ -31,7 +31,7 @@ class ListModalViewController: UIViewController, NavigationConfigurable {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
+
     private lazy var dismissButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("ปิดหน้าต่าง", for: .normal)
@@ -43,43 +43,39 @@ class ListModalViewController: UIViewController, NavigationConfigurable {
         button.addTarget(self, action: #selector(dismissButtonTapped), for: .touchUpInside)
         return button
     }()
-    
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .style(.hidden)
-            .build()
-    }
-    
+
+    var navStyle: NavigationBarStyle { .hidden }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         configureNavigationBar()
     }
-    
+
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        
+
         view.addSubview(titleLabel)
         view.addSubview(descriptionLabel)
         view.addSubview(dismissButton)
-        
+
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: -50),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
+
             descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 20),
             descriptionLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             descriptionLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            
+
             dismissButton.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 40),
             dismissButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             dismissButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
             dismissButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
-    
+
     @objc private func dismissButtonTapped() {
          coordinator?.dismiss()
     }

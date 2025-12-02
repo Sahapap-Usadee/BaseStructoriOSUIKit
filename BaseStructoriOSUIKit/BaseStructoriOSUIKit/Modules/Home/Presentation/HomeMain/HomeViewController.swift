@@ -61,12 +61,8 @@ class HomeViewController: BaseViewController<HomeViewModel>, NavigationConfigura
     }()
     
     // MARK: - Navigation Configuration    
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .title("Pokemon List")
-            .style(.colored(.systemBlue))
-            .build()
-    }
+    var navTitle: String? { "Pokemon List" }
+    var navStyle: NavigationBarStyle { .colored(.systemBlue) }
     
     // MARK: - Lifecycle
     override func viewDidLoad() {

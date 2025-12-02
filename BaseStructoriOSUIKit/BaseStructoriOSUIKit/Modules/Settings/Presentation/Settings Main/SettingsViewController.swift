@@ -54,21 +54,17 @@ class SettingsViewController: UIViewController, NavigationConfigurable {
         ])
     ]
     
-    var navigationConfiguration: NavigationConfiguration {
-        return NavigationBuilder()
-            .title("ตั้งค่า")
-            .style(.default)
-            .largeTitleMode(.always)
-            .rightButton(image: UIImage(systemName: "gear")) { [weak self] in
-                self?.settingsButtonTapped()
-            }
-            .build()
-    }
+    var navTitle: String? { "ตั้งค่า" }
+    var navStyle: NavigationBarStyle { .default }
+    var largeTitleMode: UINavigationItem.LargeTitleDisplayMode { .always }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         configureNavigationBar()
+        addNavButton(position: .right, image: UIImage(systemName: "gear")) { [weak self] in
+            self?.settingsButtonTapped()
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {

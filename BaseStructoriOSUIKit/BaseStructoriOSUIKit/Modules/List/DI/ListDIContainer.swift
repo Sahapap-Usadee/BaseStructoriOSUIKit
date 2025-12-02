@@ -7,43 +7,24 @@
 
 import UIKit
 
-// MARK: - List Factory Protocol
-protocol ListFactoryProtocol {
-    func makeListViewModel() -> ListViewModel
-    func makeListViewController() -> ListViewController
-}
+final class ListDIContainer {
 
-protocol ListCoordinatorFactory {
-    func makeListFlowCoordinator(navigationController: UINavigationController) -> ListCoordinator
-}
-
-// MARK: - List DI Container
-class ListDIContainer {
-    
     private let appDIContainer: AppDIContainer
-    
+
     init(appDIContainer: AppDIContainer) {
         self.appDIContainer = appDIContainer
     }
-}
 
-// MARK: - Coordinator Factory
-extension ListDIContainer: ListCoordinatorFactory {
+    // MARK: - Factory
     func makeListFlowCoordinator(navigationController: UINavigationController) -> ListCoordinator {
-        return ListCoordinator(navigationController: navigationController, container: self)
+        ListCoordinator(navigationController: navigationController, container: self)
     }
-}
 
-// MARK: - List DI Container + Factory
-extension ListDIContainer: ListFactoryProtocol {
-    
     func makeListViewModel() -> ListViewModel {
-        let userManager = appDIContainer.makeUserManager()
-        return ListViewModel(userManager: userManager)
+        ListViewModel(userManager: appDIContainer.makeUserManager())
     }
-    
+
     func makeListViewController() -> ListViewController {
-        let viewModel = makeListViewModel()
-        return ListViewController(viewModel: viewModel)
+        ListViewController(viewModel: makeListViewModel())
     }
 }
