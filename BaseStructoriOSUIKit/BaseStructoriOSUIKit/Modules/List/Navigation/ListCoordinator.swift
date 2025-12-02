@@ -7,7 +7,8 @@
 
 import UIKit
 
-class ListCoordinator: BaseCoordinator {
+final class ListCoordinator: BaseCoordinator {
+    
     private let container: ListDIContainer
     
     init(navigationController: UINavigationController, container: ListDIContainer) {
@@ -16,44 +17,28 @@ class ListCoordinator: BaseCoordinator {
     }
     
     func showModal() {
-        let modalViewController = ListModalViewController()
-        modalViewController.coordinator = self
-        
-        let modalNavController = UINavigationController(rootViewController: modalViewController)
-        modalNavController.modalPresentationStyle = .pageSheet
-
-        presentViewController(modalNavController)
+        let vc = ListModalViewController()
+        vc.coordinator = self
+        present(UINavigationController(rootViewController: vc), style: .pageSheet)
     }
-
+    
     func showModalFull() {
-        let modalViewController = ListModalViewController()
-        modalViewController.coordinator = self
-
-        let modalNavController = UINavigationController(rootViewController: modalViewController)
-        modalNavController.modalPresentationStyle = .fullScreen
-
-        presentViewController(modalNavController)
+        let vc = ListModalViewController()
+        vc.coordinator = self
+        present(UINavigationController(rootViewController: vc), style: .fullScreen)
     }
-
+    
     func showActionSheet() {
-        let actionSheet = UIAlertController(title: "เลือกการกระทำ", message: "กรุณาเลือกตัวเลือก", preferredStyle: .actionSheet)
-        
-        actionSheet.addAction(UIAlertAction(title: "ตัวเลือก 1", style: .default) { _ in
-            print("เลือกตัวเลือก 1")
-        })
-        
-        actionSheet.addAction(UIAlertAction(title: "ตัวเลือก 2", style: .default) { _ in
-            print("เลือกตัวเลือก 2")
-        })
-        
-        actionSheet.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))
-
-        presentViewController(actionSheet)
+        let sheet = UIAlertController(title: "เลือกการกระทำ", message: "กรุณาเลือกตัวเลือก", preferredStyle: .actionSheet)
+        sheet.addAction(UIAlertAction(title: "ตัวเลือก 1", style: .default))
+        sheet.addAction(UIAlertAction(title: "ตัวเลือก 2", style: .default))
+        sheet.addAction(UIAlertAction(title: "ยกเลิก", style: .cancel))
+        present(sheet)
     }
     
     func showAlert() {
         let alert = UIAlertController(title: "แจ้งเตือน", message: "นี่คือการแจ้งเตือนจาก Coordinator", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "ตกลง", style: .default))
-        presentViewController(alert)
+        present(alert)
     }
 }

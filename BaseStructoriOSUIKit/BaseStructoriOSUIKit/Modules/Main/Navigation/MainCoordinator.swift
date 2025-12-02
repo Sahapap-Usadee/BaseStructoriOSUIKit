@@ -7,122 +7,73 @@
 
 import UIKit
 
-class MainCoordinator: BaseCoordinator {
-
+final class MainCoordinator: BaseCoordinator {
+    
     private let container: MainDIContainer
     private let window: UIWindow
     var onSignOut: (() -> Void)?
-
+    
     init(window: UIWindow, container: MainDIContainer) {
         self.window = window
         self.container = container
-        super.init(navigationController: UINavigationController())
+        super.init()
     }
     
     override func start() {
-        print("🔍 MainCoordinator start() called")
-        let mainTabBarController = MainTabBarController()
-        mainTabBarController.coordinator = self
-
-        // สร้าง 3 tabs แบบง่าย ๆ
-        let tabs = [
+        let tabBar = MainTabBarController()
+        tabBar.coordinator = self
+        tabBar.setViewControllers([
             createHomeTab(),
-            createListTab(), 
+            createListTab(),
             createSettingsTab()
-        ]
+        ])
         
-        mainTabBarController.setViewControllers(tabs)
-        print("🔍 Created TabBarController with 3 tabs")
-        
-        // Set TabBar as window root และ make key window
-        window.rootViewController = mainTabBarController
+        window.rootViewController = tabBar
         window.makeKeyAndVisible()
-        print("🔍 MainCoordinator set window root to TabBarController and made key")
     }
     
-        // MARK: - สร้าง Tabs แบบง่าย ๆ
+    // MARK: - Tabs
+    
     private func createHomeTab() -> UINavigationController {
-        // สร้าง ViewController ผ่าน Module DI Container
-        let homeDIContainer = container.makeHomeDIContainer()
-        let homeViewController = homeDIContainer.makeHomeViewController()
+        let homeDI = container.makeHomeDIContainer()
+        let homeVC = homeDI.makeHomeViewController()
         
-        // สร้าง NavigationController
-        let navigationController = NavigationManager.shared.createNavigationController(
-            rootViewController: homeViewController,
-            style: .default
-        )
+        let nav = NavigationManager.shared.createNavigationController(rootViewController: homeVC, style: .default)
+        nav.tabBarItem = UITabBarItem(title: "หน้าหลัก", image: UIImage(systemName: "house"), selectedImage: UIImage(systemName: "house.fill"))
         
-        // ตั้งค่า TabBar Item
-        navigationController.tabBarItem = UITabBarItem(
-            title: "หน้าหลัก",
-            image: UIImage(systemName: "house"),
-            selectedImage: UIImage(systemName: "house.fill")
-        )
+        let coordinator = homeDI.makeHomeFlowCoordinator(navigationController: nav)
+        addChild(coordinator)
+        homeVC.coordinator = coordinator
         
-        // สร้าง Coordinator ผ่าน Module DI Container
-        let homeCoordinator = homeDIContainer.makeHomeFlowCoordinator(navigationController: navigationController)
-        addChildCoordinator(homeCoordinator) // ✅ ใช้ built-in method
-        print("🔍 Created HomeCoordinator: \(homeCoordinator)")
-        print("🔍 Added to childCoordinators: \(childCoordinators.count) coordinators")
-        
-        homeViewController.coordinator = homeCoordinator
-        
-        return navigationController
+        return nav
     }
     
     private func createListTab() -> UINavigationController {
-        // สร้าง ViewController ผ่าน Module DI Container
-        let listDIContainer = container.makeListDIContainer()
-        let listViewController = listDIContainer.makeListViewController()
+        let listDI = container.makeListDIContainer()
+        let listVC = listDI.makeListViewController()
         
-        // สร้าง NavigationController
-        let navigationController = NavigationManager.shared.createNavigationController(
-            rootViewController: listViewController,
-            style: .colored(.systemBlue)
-        )
+        let nav = NavigationManager.shared.createNavigationController(rootViewController: listVC, style: .colored(.systemBlue))
+        nav.tabBarItem = UITabBarItem(title: "รายการ", image: UIImage(systemName: "list.bullet"), selectedImage: UIImage(systemName: "list.bullet.rectangle.fill"))
         
-        // ตั้งค่า TabBar Item
-        navigationController.tabBarItem = UITabBarItem(
-            title: "รายการ",
-            image: UIImage(systemName: "list.bullet"),
-            selectedImage: UIImage(systemName: "list.bullet.rectangle.fill")
-        )
+        let coordinator = listDI.makeListFlowCoordinator(navigationController: nav)
+        addChild(coordinator)
+        listVC.coordinator = coordinator
         
-        // สร้าง Coordinator ผ่าน Module DI Container
-        let listCoordinator = listDIContainer.makeListFlowCoordinator(navigationController: navigationController)
-        addChildCoordinator(listCoordinator) // ✅ ใช้ built-in method
-        listViewController.coordinator = listCoordinator
-        
-        return navigationController
+        return nav
     }
     
     private func createSettingsTab() -> UINavigationController {
-        // สร้าง ViewController ผ่าน Module DI Container
-        let settingsDIContainer = container.makeSettingsDIContainer()
-        let settingsViewController = settingsDIContainer.makeSettingsViewController()
+        let settingsDI = container.makeSettingsDIContainer()
+        let settingsVC = settingsDI.makeSettingsViewController()
         
-        // สร้าง NavigationController
-        let navigationController = NavigationManager.shared.createNavigationController(
-            rootViewController: settingsViewController,
-            style: .default
-        )
+        let nav = NavigationManager.shared.createNavigationController(rootViewController: settingsVC, style: .default)
+        nav.tabBarItem = UITabBarItem(title: "ตั้งค่า", image: UIImage(systemName: "gearshape"), selectedImage: UIImage(systemName: "gearshape.fill"))
         
-        // ตั้งค่า TabBar Item
-        navigationController.tabBarItem = UITabBarItem(
-            title: "ตั้งค่า",
-            image: UIImage(systemName: "gearshape"),
-            selectedImage: UIImage(systemName: "gearshape.fill")
-        )
+        let coordinator = settingsDI.makeSettingsFlowCoordinator(navigationController: nav)
+        coordinator.onSignOut = { [weak self] in self?.onSignOut?() }
+        addChild(coordinator)
+        settingsVC.coordinator = coordinator
         
-        // สร้าง Coordinator ผ่าน Module DI Container
-        let settingsCoordinator = settingsDIContainer.makeSettingsFlowCoordinator(navigationController: navigationController)
-        settingsCoordinator.onSignOut = { [weak self] in
-            self?.onSignOut?()
-        }
-        addChildCoordinator(settingsCoordinator) // ✅ ใช้ built-in method
-        settingsViewController.coordinator = settingsCoordinator
-        
-        return navigationController
+        return nav
     }
-
 }

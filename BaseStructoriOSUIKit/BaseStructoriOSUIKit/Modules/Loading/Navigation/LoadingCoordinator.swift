@@ -7,23 +7,23 @@
 
 import UIKit
 
-class LoadingCoordinator: BaseCoordinator {
+final class LoadingCoordinator: BaseCoordinator {
+    
     private let container: LoadingDIContainer
     var onFinishedLoading: (() -> Void)?
-
+    
     init(navigationController: UINavigationController, container: LoadingDIContainer) {
         self.container = container
         super.init(navigationController: navigationController)
     }
-
+    
     override func start() {
-        let loadingViewController = container.makeLoadingViewController()
-        loadingViewController.coordinator = self
-        
-        navigationController.setViewControllers([loadingViewController], animated: false)
+        let vc = container.makeLoadingViewController()
+        vc.coordinator = self
+        setRoot(vc)
     }
     
     func didFinishLoading() {
-        self.onFinishedLoading?()
+        onFinishedLoading?()
     }
 }

@@ -7,44 +7,25 @@
 
 import UIKit
 
-class HomeCoordinator: BaseCoordinator {
+final class HomeCoordinator: BaseCoordinator {
+    
     private let container: HomeDIContainer
-
+    
     init(navigationController: UINavigationController, container: HomeDIContainer) {
         self.container = container
         super.init(navigationController: navigationController)
-        print("🔍 HomeCoordinator created: \(self)")
-    }
-    
-    deinit {
-        print("🔍 HomeCoordinator deinit: \(self)")
     }
     
     func showDetail(pokemonId: Int, hidesBottomBar: Bool = true) {
-        print("🔍 HomeCoordinator showDetail called with pokemonId: \(pokemonId)")
-        print("🔍 NavigationController: \(navigationController)")
-        print("🔍 NavigationController viewControllers count: \(navigationController.viewControllers.count)")
-        
-        // สร้าง DetailViewController ผ่าน Module DI Container
-        let detailViewController = container.makeHomeDetailViewController(pokemonId: pokemonId)
-        detailViewController.coordinator = self
-        // Hide TabBar when pushing (full screen)
-        detailViewController.hidesBottomBarWhenPushed = hidesBottomBar
-
-        pushViewController(detailViewController, animated: true)
-        
-        print("🔍 After push - viewControllers count: \(navigationController.viewControllers.count)")
+        let vc = container.makeHomeDetailViewController(pokemonId: pokemonId)
+        vc.coordinator = self
+        vc.hidesBottomBarWhenPushed = hidesBottomBar
+        push(vc)
     }
     
     func showDetailModal(pokemonId: Int) {
-        print("🔍 HomeCoordinator showDetailModal called with pokemonId: \(pokemonId)")
-        
-        let detailViewController = container.makeHomeDetailViewController(pokemonId: pokemonId)
-        detailViewController.coordinator = self
-        
-        // Wrap in NavigationController for modal presentation
-        let modalNavController = UINavigationController(rootViewController: detailViewController)
-        modalNavController.modalPresentationStyle = .fullScreen
-        presentViewController(modalNavController)
+        let vc = container.makeHomeDetailViewController(pokemonId: pokemonId)
+        vc.coordinator = self
+        present(UINavigationController(rootViewController: vc), style: .fullScreen)
     }
 }

@@ -23,12 +23,12 @@ protocol HomeCoordinatorFactory {
 class HomeDIContainer {
 
     private let appDIContainer: AppDIContainer
-    
+
     init(appDIContainer: AppDIContainer) {
         self.appDIContainer = appDIContainer
     }
-    
-    // MARK: - Pokemon Data Layer 
+
+    // MARK: - Pokemon Data Layer
     private lazy var pokemonRemoteDataSource: PokemonRemoteDataSourceProtocol = PokemonRemoteDataSource(networkService: appDIContainer.makeNetworkService())
     private lazy var pokemonRepository: PokemonRepositoryProtocol = PokemonRepositoryImpl(remoteDataSource: pokemonRemoteDataSource)
     private lazy var getPokemonListUseCase: GetPokemonListUseCaseProtocol = GetPokemonListUseCase(repository: pokemonRepository)
@@ -50,20 +50,20 @@ extension HomeDIContainer: HomeFactoryProtocol {
             getPokemonListUseCase: getPokemonListUseCase
         )
     }
-    
+
     func makeHomeViewController() -> HomeViewController {
         let viewModel = makeHomeViewModel()
         print("")
         return HomeViewController(viewModel: viewModel)
     }
-    
+
     func makeHomeDetailViewModel(pokemonId: Int) -> HomeDetailViewModel {
         return HomeDetailViewModel(
             pokemonId: pokemonId,
             getPokemonDetailUseCase: getPokemonDetailUseCase
         )
     }
-    
+
     func makeHomeDetailViewController(pokemonId: Int) -> HomeDetailViewController {
         let viewModel = makeHomeDetailViewModel(pokemonId: pokemonId)
         return HomeDetailViewController(viewModel: viewModel)

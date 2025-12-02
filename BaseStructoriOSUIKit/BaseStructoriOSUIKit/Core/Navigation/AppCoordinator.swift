@@ -7,128 +7,91 @@
 
 import UIKit
 
-class AppCoordinator: BaseCoordinator {
+final class AppCoordinator: BaseCoordinator {
+    
     private let window: UIWindow
     private let container: AppDIContainer
-
-    // MARK: - App State Management
-    private enum AppState {
-        case loading
-        case main
-        case sessionExpired
-    }
-    
     private var currentState: AppState = .loading
+    
+    private enum AppState {
+        case loading, main, expired
+    }
     
     init(window: UIWindow, container: AppDIContainer) {
         self.window = window
         self.container = container
-        super.init(navigationController: UINavigationController())
-        setupSessionExpiredHandling()
+        super.init()
+        observeSessionExpired()
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-        print("🔍 AppCoordinator deinit")
     }
     
     override func start() {
-        // Setup global navigation appearance
         NavigationManager.shared.setupGlobalAppearance()
-        
-        // Start with loading coordinator
-        transitionTo(.loading)
+        goTo(.loading)
     }
     
-    // MARK: - State Management
-    private func transitionTo(_ newState: AppState) {        
-        let previousState = currentState
-        currentState = newState
-        
-        print("🔄 AppCoordinator: \(previousState) → \(newState)")
-        
-        // Clean up previous state
+    // MARK: - State
+    
+    private func goTo(_ state: AppState) {
         finish()
+        currentState = state
         
-        // Setup new state
-        switch newState {
-        case .loading:
-            showLoadingScreen()
-        case .main:
-            showMainApp()
-        case .sessionExpired:
-            showSessionExpiredFlow()
+        switch state {
+        case .loading:  showLoading()
+        case .main:     showMain()
+        case .expired:  showSessionExpired()
         }
     }
     
-    private func showLoadingScreen() {
-        let loadingDIContainer = container.makeLoadingDIContainer()
-        let loadingCoordinator = loadingDIContainer.makeLoadingFlowCoordinator(navigationController: navigationController)
+    // MARK: - Screens
+    
+    private func showLoading() {
+        let loadingContainer = container.makeLoadingDIContainer()
+        let loadingCoordinator = loadingContainer.makeLoadingFlowCoordinator(navigationController: navigationController)
+        
         loadingCoordinator.onFinishedLoading = { [weak self] in
-            self?.transitionTo(.main)
+            self?.goTo(.main)
         }
-
-        addChildCoordinator(loadingCoordinator)
         
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
         
-        loadingCoordinator.start()
+        coordinate(to: loadingCoordinator)
     }
-
-    private func showMainApp() {
-        print("🔍 AppCoordinator showMainApp() called")
+    
+    private func showMain() {
+        let mainContainer = container.makeMainDIContainer()
+        let mainCoordinator = mainContainer.makeMainFlowCoordinator(window: window)
         
-        // Create main coordinator through factory
-        let mainDIContainer = container.makeMainDIContainer()
-        let mainCoordinator = mainDIContainer.makeMainFlowCoordinator(window: window)
         mainCoordinator.onSignOut = { [weak self] in
-            self?.transitionTo(.loading)
+            self?.goTo(.loading)
         }
         
-        addChildCoordinator(mainCoordinator)
-        print("🔍 AppCoordinator created MainCoordinator: \(mainCoordinator)")
-
-        mainCoordinator.start()
-        print("🔍 AppCoordinator called mainCoordinator.start() - MainCoordinator handles window internally")
+        coordinate(to: mainCoordinator)
     }
     
-    private func showSessionExpiredFlow() {
-        showSessionExpiredAlert { [weak self] in
-            self?.transitionTo(.loading)
-        }
-    }
-    
-    private func showSessionExpiredAlert(completion: @escaping () -> Void) {
+    private func showSessionExpired() {
         let alert = UIAlertController(
             title: "เซสชันหมดอายุ",
-            message: "เซสชันของคุณหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่",
+            message: "กรุณาเข้าสู่ระบบใหม่",
             preferredStyle: .alert
         )
-        
-        let okAction = UIAlertAction(title: "ตกลง", style: .default) { _ in
-            completion()
-        }
-        
-        alert.addAction(okAction)
-
-        if let topViewController = getTopViewController() {
-            topViewController.present(alert, animated: true)
-        }
+        alert.addAction(UIAlertAction(title: "ตกลง", style: .default) { [weak self] _ in
+            self?.goTo(.loading)
+        })
+        topViewController()?.present(alert, animated: true)
     }
-}
-
-extension AppCoordinator {
-    private func setupSessionExpiredHandling() {
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(handleSessionExpired),
-            name: .sessionExpired,
-            object: nil
-        )
+    
+    // MARK: - Session
+    
+    private func observeSessionExpired() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleSessionExpired), name: .sessionExpired, object: nil)
     }
-
+    
     @objc private func handleSessionExpired() {
-        transitionTo(.sessionExpired)
+        goTo(.expired)
     }
 }
